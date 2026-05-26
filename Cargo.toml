@@ -1,0 +1,15 @@
+[package]
+name = "mb-graphql"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-graphql = { version = "7.0", features = ["uuid", "chrono", "dataloader"] }
+async-graphql-axum = "7.0"
+tokio = { version = "1.0", features = ["full"] }
+sqlx = { version = "0.7", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "time"] }
+uuid = { version = "1.0", features = ["serde", "v4"] }
+serde = { version = "1.0", features = ["derive"] }
+async-trait = "0.1.89"
+anyhow = "1.0.101"
+serde_json = "1.0"
