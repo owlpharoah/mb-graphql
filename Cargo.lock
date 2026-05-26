@@ -1314,6 +1314,8 @@ dependencies = [
  "async-graphql",
  "async-graphql-axum",
  "async-trait",
+ "axum",
+ "dotenvy",
  "serde",
  "serde_json",
  "sqlx",
