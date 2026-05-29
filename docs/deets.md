@@ -9,3 +9,7 @@
 2. Schema Config (graphql/mod):
     - max depth: 5
     - max complexity: 200
+
+3. Schema Generation:
+    - Generation Code: bin/export_sdl.rs
+    - Output: schema/schema.graphql

@@ -1,4 +1,5 @@
 use async_graphql::SimpleObject;
+use uuid::Uuid;
 
 #[derive(SimpleObject, Clone)]
 pub struct PartialDate {
@@ -31,7 +32,7 @@ pub struct Tag {
 
 #[derive(SimpleObject, Clone)]
 pub struct Genre {
-    pub mbid: String,
+    pub mbid: Uuid,
     pub name: String,
     pub disambiguation: Option<String>,
 }
@@ -69,7 +70,7 @@ pub struct ReleaseEvent {
 //todo-----
 #[derive(SimpleObject, Clone)]
 pub struct Track {
-    pub mbid: String,
+    pub mbid: Uuid,
     pub title: String,
     pub number: String,
     pub position: i32,

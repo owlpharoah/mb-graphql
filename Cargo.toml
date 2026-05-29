@@ -3,6 +3,14 @@ name = "mb-graphql"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "mb-graphql"
+path = "src/main.rs"
+
+[[bin]]
+name= "export-sdl"
+path="src/bin/export_sdl.rs"
+
 [dependencies]
 async-graphql = { version = "7.0", features = ["uuid", "chrono", "dataloader"] }
 async-graphql-axum = "7.0"
@@ -15,3 +23,5 @@ anyhow = "1.0.101"
 serde_json = "1.0"
 dotenvy = "0.15.7"
 axum = "0.8.9"
+tracing = "0.1.44"
+tracing-subscriber = {version="0.3.23" , features = ["env-filter"]}

@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Check, lint, test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy
+
+      - name: Build
+        run: cargo build
+
+      - name: Test
+        run: cargo test
+
+      - name: Export SDL
+        run: cargo run --bin export-sdl
+
+      - name: Upload SDL as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema
+          path: schema/schema.graphql
+
+      - name: Diff SDL
+        run: |
+          git diff --exit-code schema/schema.graphql || \
+          echo "::warning::Schema changed. Review schema/schema.graphql in this PR."
