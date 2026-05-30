@@ -8,7 +8,7 @@ pub mod query;
 pub mod types;
 
 pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
-    Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
+    Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(5)
         .limit_complexity(200)
         .data(pool)
@@ -16,7 +16,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
 }
 
 pub fn build_schema_export() -> AppSchema {
-    Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
+    Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(5)
         .limit_complexity(200)
         .finish()
