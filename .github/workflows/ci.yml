@@ -33,16 +33,7 @@ jobs:
       - name: Test
         run: cargo test
 
-      - name: Export SDL
-        run: cargo run --bin export-sdl
-
-      - name: Upload SDL as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: schema
-          path: schema/schema.graphql
-
-      - name: Diff SDL
+      - name: Verify SDL is up to date
         run: |
-          git diff --exit-code schema/schema.graphql || \
-          echo "::warning::Schema changed. Review schema/schema.graphql in this PR."
+          cargo run --bin export-sdl
+          git diff --exit-code schema/schema.graphql

@@ -1,9 +1,12 @@
-use async_graphql::{ComplexObject, Context, Object, ScalarType, SimpleObject};
+use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, PgPool};
+use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::graphql::types;
+use crate::graphql::{
+    loaders::release_group_by_artist::ReleaseGroupByArtistLoader,
+    types::{self, release_group::ReleaseGroup},
+};
 use types::common::PartialDate;
 
 #[derive(sqlx::FromRow)]
@@ -47,13 +50,13 @@ pub struct Artist {
     pub end_date: Option<PartialDate>,
 
     #[graphql(skip)]
-    pub(crate) id: i32,
+    pub id: i32,
     #[graphql(skip)]
     pub area: Option<i32>,
     #[graphql(skip)]
-    pub(crate) begin_area: Option<i32>,
+    pub begin_area: Option<i32>,
     #[graphql(skip)]
-    pub(crate) end_area: Option<i32>,
+    pub end_area: Option<i32>,
 }
 
 impl From<ArtistRow> for Artist {
@@ -100,7 +103,7 @@ impl ArtistQuery {
         )
         .bind(uuid)
         .fetch_optional(pool)
-        .await?;
+        .await.map_err(|e| async_graphql::Error::new(e.to_string()))?;
 
         Ok(row.map(Artist::from))
     }
@@ -113,7 +116,7 @@ impl ArtistQuery {
         let pool = ctx.data::<PgPool>()?;
         let uuids: Vec<Uuid> = mbids
             .iter()
-            .map(|s| Uuid::parse_str(&s))
+            .map(|s| Uuid::parse_str(s))
             .collect::<Result<_, _>>()?;
 
         let rows = sqlx::query_as::<_, ArtistRow>(
@@ -123,7 +126,7 @@ impl ArtistQuery {
         )
         .bind(&uuids)
         .fetch_all(pool)
-        .await?;
+        .await.map_err(|e| async_graphql::Error::new(e.to_string()))?;
 
         Ok(rows.into_iter().map(Artist::from).collect())
     }
@@ -131,7 +134,9 @@ impl ArtistQuery {
 
 #[ComplexObject]
 impl Artist {
-    async fn game(&self) -> String {
-        todo!()
+    async fn release_group(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseGroup>> {
+        let loader = ctx.data::<DataLoader<ReleaseGroupByArtistLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }
