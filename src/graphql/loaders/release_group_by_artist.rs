@@ -44,7 +44,7 @@ impl Loader<i32> for ReleaseGroupByArtistLoader {
                     WHERE arg.artist = ANY($1)
                     "#,
         )
-        .bind(&artist_ids)
+        .bind(artist_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
