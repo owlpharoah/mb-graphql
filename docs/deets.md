@@ -19,7 +19,11 @@
 1. The primaryType,secondaryTypes and similar others under releasegroup is in the materialized table `artist_release_group` and should be defined in complex object
 2. The dataloader - ReleaseGroupByArtist will take in artist_id not mbid
 
-## Choices/TODO
-Q. should comment be exposed as comment or disambiguation
-Q. release_group_type == primary type , then ill expose it as primary type
-T. convert primary/secondary type into string (rn its a number)
+## Choices
+1.`Primary Type` is exposed as `Type`.
+2. `Comment` is exposed as `Disambiguation`.
+
+# Week 4
+
+## TODOS
+1. clean asin url to only return asin code

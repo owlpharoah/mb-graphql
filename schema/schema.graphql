@@ -21,6 +21,25 @@ type QueryRoot {
 	artist(mbid: String!): Artist
 	artists(mbids: [String!]!): [Artist!]!
 	releaseGroup(mbid: String!): ReleaseGroup
+	releaseGroups(mbids: [String!]!): [ReleaseGroup!]!
+	release(mbid: String!): Release
+	releases(mbids: [String!]!): [Release!]!
+}
+
+type Release {
+	mbid: UUID!
+	name: String!
+	status: Int
+	packaging: Int
+	quality: Int!
+	language: Int
+	script: Int
+	barcode: String
+	disambiguation: String
+	date: PartialDate
+	asin: [String!]
+	country: String
+	releaseGroup: ReleaseGroup
 }
 
 type ReleaseGroup {
@@ -28,8 +47,9 @@ type ReleaseGroup {
 	name: String!
 	disambiguation: String
 	type: Int
+	secondaryType: [Int!]
 	firstReleaseDate: PartialDate
-	area: String!
+	release: [Release!]!
 }
 
 """

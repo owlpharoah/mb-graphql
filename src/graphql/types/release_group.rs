@@ -1,22 +1,24 @@
-use async_graphql::{ComplexObject, Context, Object, SimpleObject};
+use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::graphql::types;
+use crate::graphql::{
+    loaders::release_by_release_group::ReleaseByGroupLoader,
+    types::{self, release::Release},
+};
 use types::common::PartialDate;
 
 #[derive(sqlx::FromRow)]
-struct ReleaseGroupRow {
+pub struct ReleaseGroupRow {
     id: i32,
     gid: Uuid,
     name: String,
     artist_credit: i32,
     comment: Option<String>,
     #[sqlx(rename = "type")]
-    release_group_type: Option<i16>,
+    release_group_type: Option<i32>,
 }
-//TODO: TO make sure you can access stuff like primary type and stuff direcly by queruing rg as well as by artist
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 #[graphql(complex)]
 pub struct ReleaseGroup {
@@ -24,15 +26,12 @@ pub struct ReleaseGroup {
     pub name: String,
     pub disambiguation: Option<String>,
     #[graphql(name = "type")]
-    pub release_group_type: Option<i16>,
+    pub release_group_type: Option<i32>,
 
     #[graphql(skip)]
     pub id: i32,
     #[graphql(skip)]
     pub artist_credit: i32,
-    #[graphql(skip)]
-    pub secondary_types: Option<Vec<i16>>,
-    pub first_release_date: Option<PartialDate>,
 }
 
 impl From<ReleaseGroupRow> for ReleaseGroup {
@@ -44,8 +43,6 @@ impl From<ReleaseGroupRow> for ReleaseGroup {
             release_group_type: r.release_group_type,
             id: r.id,
             artist_credit: r.artist_credit,
-            secondary_types: Some(vec![]),
-            first_release_date: None,
         }
     }
 }
@@ -74,11 +71,81 @@ impl ReleaseGroupQuery {
 
         Ok(row.map(ReleaseGroup::from))
     }
+
+    async fn release_groups(
+        &self,
+        ctx: &Context<'_>,
+        mbids: Vec<String>,
+    ) -> async_graphql::Result<Vec<ReleaseGroup>> {
+        let pool = ctx.data::<PgPool>()?;
+        let uuids: Vec<Uuid> = mbids
+            .iter()
+            .map(|s| Uuid::parse_str(s))
+            .collect::<Result<_, _>>()?;
+
+        let rows = sqlx::query_as::<_, ReleaseGroupRow>(
+            "SELECT id, gid, name,comment,type,artist_credit
+                        FROM release_group
+                        WHERE gid = ANY($1)",
+        )
+        .bind(&uuids)
+        .fetch_all(pool)
+        .await
+        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+        Ok(rows.into_iter().map(ReleaseGroup::from).collect())
+    }
 }
 
 #[ComplexObject]
 impl ReleaseGroup {
-    async fn area(&self) -> String {
-        todo!()
+    async fn secondary_type(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Vec<i16>>> {
+        let pool = ctx.data::<PgPool>()?;
+
+        // this second option cause we need to handle three states:
+        // row is none None
+        // row is found and vec si present Some(vec)
+        // row is found and vec is absent Some(None)
+        let row: Option<Option<Vec<i16>>> = sqlx::query_scalar(
+            "SELECT secondary_types
+            FROM artist_release_group WHERE release_group = $1",
+        )
+        .bind(self.id)
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(row.flatten())
+    }
+
+    async fn first_release_date(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::Result<Option<PartialDate>> {
+        let pool = ctx.data::<PgPool>()?;
+
+        let row: Option<Option<i32>> = sqlx::query_scalar(
+            "SELECT first_release_date
+            FROM artist_release_group
+            WHERE release_group = $1",
+        )
+        .bind(self.id)
+        .fetch_optional(pool)
+        .await?;
+
+        let pdate = row.unwrap_or(None).and_then(|date| {
+            PartialDate::from_parts(
+                Some((date / 10000) as i16),
+                Some(((date / 100) % 100) as i16),
+                Some((date % 100) as i16),
+            )
+        });
+
+        return Ok(pdate);
+    }
+
+    async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+        let loader = ctx.data::<DataLoader<ReleaseByGroupLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

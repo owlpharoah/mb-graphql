@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use std::collections::HashMap;
 use uuid::Uuid;
 
-use crate::graphql::types::{common::PartialDate, release_group::ReleaseGroup};
+use crate::graphql::types::release_group::ReleaseGroup;
 
 #[derive(sqlx::FromRow)]
 struct ArtistReleaseGroupRow {
@@ -14,8 +14,6 @@ struct ArtistReleaseGroupRow {
     artist_credit: i32,
     comment: Option<String>,
     primary_type: Option<i16>,
-    secondary_types: Option<Vec<i16>>,
-    first_release_date: Option<i32>,
 }
 
 pub struct ReleaseGroupByArtistLoader {
@@ -33,8 +31,6 @@ impl Loader<i32> for ReleaseGroupByArtistLoader {
                         arg.artist,
                         arg.release_group,
                         arg.primary_type,
-                        arg.secondary_types,
-                        arg.first_release_date,
                         rg.name,
                         rg.artist_credit,
                         rg.comment,
@@ -56,17 +52,9 @@ impl Loader<i32> for ReleaseGroupByArtistLoader {
                 mbid: row.gid,
                 name: row.name,
                 disambiguation: row.comment,
-                release_group_type: row.primary_type,
+                release_group_type: row.primary_type.map(|x| x as i32),
                 id: row.release_group,
                 artist_credit: row.artist_credit,
-                secondary_types: row.secondary_types,
-                first_release_date: row.first_release_date.and_then(|date| {
-                    PartialDate::from_parts(
-                        Some((date / 10000) as i16),
-                        Some(((date / 100) % 100) as i16),
-                        Some((date % 100) as i16),
-                    )
-                }),
             });
         }
         for artist_id in artist_ids {
