@@ -11,6 +11,17 @@ type Artist {
 	releaseGroup: [ReleaseGroup!]!
 }
 
+type Label {
+	mbid: UUID!
+	name: String!
+	disambiguation: String
+	type: Int
+	ended: Boolean!
+	beginDate: PartialDate
+	endDate: PartialDate
+	firstReleaseDate: PartialDate
+}
+
 type PartialDate {
 	year: Int
 	month: Int
@@ -24,6 +35,20 @@ type QueryRoot {
 	releaseGroups(mbids: [String!]!): [ReleaseGroup!]!
 	release(mbid: String!): Release
 	releases(mbids: [String!]!): [Release!]!
+	recording(mbid: String!): Recording
+	recordings(mbids: [String!]!): [Recording!]!
+	label(mbid: String!): Label
+	labels(mbids: [String!]!): [Label!]!
+}
+
+type Recording {
+	mbid: UUID!
+	name: String!
+	disambiguation: String
+	length: Int
+	video: Boolean!
+	firstReleaseDate: PartialDate
+	isrc: String
 }
 
 type Release {
