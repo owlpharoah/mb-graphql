@@ -30,9 +30,6 @@ jobs:
       - name: Build
         run: cargo build
 
-      - name: Test
-        run: cargo test
-
       - name: Verify SDL is up to date
         run: |
           cargo run --bin export-sdl

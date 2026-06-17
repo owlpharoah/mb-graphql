@@ -23,11 +23,9 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
 
 pub async fn test_pool() -> Result<PgPool, sqlx::Error> {
     dotenvy::dotenv().ok();
-    let db_url = std::env::var("TEST_DATABASE_URL")
-        .or_else(|_| {
-            std::env::var("postgres://musicbrainz:musicbrainz@localhost:5432/musicbrainz_db")
-        })
-        .expect("Test Database URL must be set in env");
+    let db_url = std::env::var("TEST_DATABASE_URL").unwrap_or_else(|_| {
+        "postgres://musicbrainz:musicbrainz@localhost:5432/musicbrainz_db".to_string()
+    });
 
     PgPoolOptions::new()
         .max_connections(20)
