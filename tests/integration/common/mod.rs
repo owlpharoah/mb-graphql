@@ -2,22 +2,29 @@ use async_graphql::{EmptyMutation, EmptySubscription, Schema, dataloader::DataLo
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::time::Duration;
 
-use mb_graphql::graphql::loaders::release_group_by_artist::ReleaseGroupByArtistLoader;
-use mb_graphql::graphql::query::QueryRoot;
+use mb_graphql::graphql::{
+    loaders::{
+        entity::release_group::ReleaseGroupLoader,
+        relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
+    },
+    query::QueryRoot,
+};
 
 pub type AppSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
 
 pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
-    let loader = DataLoader::new(
-        ReleaseGroupByArtistLoader { pool: pool.clone() },
+    let rg_a_loader = DataLoader::new(
+        ReleaseGroupIdsByArtistLoader { pool: pool.clone() },
         tokio::spawn,
     );
+    let rg_loader = DataLoader::new(ReleaseGroupLoader { pool: pool.clone() }, tokio::spawn);
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(5)
         .limit_complexity(200)
         .data(pool)
-        .data(loader)
+        .data(rg_a_loader)
+        .data(rg_loader)
         .finish()
 }
 

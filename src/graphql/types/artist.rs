@@ -4,7 +4,10 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::graphql::{
-    loaders::release_group_by_artist::ReleaseGroupByArtistLoader,
+    loaders::{
+        entity::release_group::ReleaseGroupLoader,
+        relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
+    },
     types::{self, release_group::ReleaseGroup},
 };
 use types::common::PartialDate;
@@ -135,8 +138,19 @@ impl ArtistQuery {
 #[ComplexObject]
 impl Artist {
     async fn release_group(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseGroup>> {
-        let loader = ctx.data::<DataLoader<ReleaseGroupByArtistLoader>>()?;
+        let artist_ids = ctx.data::<DataLoader<ReleaseGroupIdsByArtistLoader>>()?;
+        let ids = artist_ids.load_one(self.id).await?.unwrap_or_default();
 
-        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let rg_loader = ctx.data::<DataLoader<ReleaseGroupLoader>>()?;
+        let rg_map = rg_loader.load_many(ids.clone()).await?;
+
+        Ok(ids
+            .into_iter()
+            .filter_map(|id| rg_map.get(&id).cloned())
+            .collect())
     }
 }

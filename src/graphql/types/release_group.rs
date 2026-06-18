@@ -4,7 +4,10 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::graphql::{
-    loaders::release_by_release_group::ReleaseByGroupLoader,
+    loaders::{
+        entity::release::ReleaseLoader,
+        relationship::release_id_by_release_group::ReleaseIdByReleaseGroupLoader,
+    },
     types::{self, release::Release},
 };
 use types::common::PartialDate;
@@ -144,8 +147,19 @@ impl ReleaseGroup {
     }
 
     async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
-        let loader = ctx.data::<DataLoader<ReleaseByGroupLoader>>()?;
+        let rg_ids = ctx.data::<DataLoader<ReleaseIdByReleaseGroupLoader>>()?;
+        let ids = rg_ids.load_one(self.id).await?.unwrap_or_default();
 
-        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let r_loader = ctx.data::<DataLoader<ReleaseLoader>>()?;
+        let r_map = r_loader.load_many(ids.clone()).await?;
+
+        Ok(ids
+            .into_iter()
+            .filter_map(|id| r_map.get(&id).cloned())
+            .collect())
     }
 }
