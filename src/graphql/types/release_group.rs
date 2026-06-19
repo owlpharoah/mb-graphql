@@ -146,7 +146,7 @@ impl ReleaseGroup {
         Ok(pdate)
     }
 
-    async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+    async fn releases(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
         let rg_ids = ctx.data::<DataLoader<ReleaseIdByReleaseGroupLoader>>()?;
         let ids = rg_ids.load_one(self.id).await?.unwrap_or_default();
 

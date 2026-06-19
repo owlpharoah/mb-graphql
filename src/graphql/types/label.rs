@@ -140,10 +140,7 @@ impl LabelQuery {
 
 #[ComplexObject]
 impl Label {
-    async fn first_release_date(
-        &self,
-        ctx: &Context<'_>,
-    ) -> async_graphql::Result<Option<PartialDate>> {
+    async fn first_release_date(&self) -> async_graphql::Result<Option<PartialDate>> {
         todo!()
     }
 }

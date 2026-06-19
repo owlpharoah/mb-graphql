@@ -5,10 +5,11 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
-        entity::release_group::ReleaseGroupLoader,
+        entity::release::ReleaseLoader, entity::release_group::ReleaseGroupLoader,
         relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
+        relationship::release_id_by_artist::ReleaseIdsByArtistLoader,
     },
-    types::{self, release_group::ReleaseGroup},
+    types::{self, release::Release, release_group::ReleaseGroup},
 };
 use types::common::PartialDate;
 
@@ -137,7 +138,7 @@ impl ArtistQuery {
 
 #[ComplexObject]
 impl Artist {
-    async fn release_group(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseGroup>> {
+    async fn release_groups(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseGroup>> {
         let artist_ids = ctx.data::<DataLoader<ReleaseGroupIdsByArtistLoader>>()?;
         let ids = artist_ids.load_one(self.id).await?.unwrap_or_default();
 
@@ -151,6 +152,22 @@ impl Artist {
         Ok(ids
             .into_iter()
             .filter_map(|id| rg_map.get(&id).cloned())
+            .collect())
+    }
+    async fn releases(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+        let artist_ids = ctx.data::<DataLoader<ReleaseIdsByArtistLoader>>()?;
+        let ids = artist_ids.load_one(self.id).await?.unwrap_or_default();
+
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let r_loader = ctx.data::<DataLoader<ReleaseLoader>>()?;
+        let r_map = r_loader.load_many(ids.clone()).await?;
+
+        Ok(ids
+            .into_iter()
+            .filter_map(|id| r_map.get(&id).cloned())
             .collect())
     }
 }

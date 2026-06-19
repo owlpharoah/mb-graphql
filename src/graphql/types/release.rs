@@ -1,10 +1,12 @@
-use async_graphql::{ComplexObject, Context, Object, SimpleObject};
+use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::types::{
     self,
+    common::LabelInfo,
     release_group::{ReleaseGroup, ReleaseGroupRow},
 };
 use types::common::PartialDate;
@@ -214,5 +216,11 @@ impl Release {
         .await?;
 
         Ok(row.map(ReleaseGroup::from))
+    }
+
+    async fn label_info(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<LabelInfo>> {
+        let loader = ctx.data::<DataLoader<LabelInfosByReleaseLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

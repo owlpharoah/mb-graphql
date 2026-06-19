@@ -1,6 +1,8 @@
-use async_graphql::SimpleObject;
+use async_graphql::{ComplexObject, Context, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+use crate::graphql::{loaders::entity::label::LabelLoader, types::label::Label};
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 pub struct PartialDate {
@@ -56,10 +58,12 @@ pub struct ArtistCredit {
 
 //todo-----
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
+#[graphql(complex)]
 pub struct LabelInfo {
     #[graphql(name = "catalogNumber")]
     pub catalog_number: Option<String>,
-    // label: Label
+    #[graphql(skip)]
+    pub label_id: Option<i32>,
 }
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
@@ -98,5 +102,18 @@ impl PartialDate {
         } else {
             Some(Self { year, month, day })
         }
+    }
+}
+
+#[ComplexObject]
+impl LabelInfo {
+    async fn label(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Label>> {
+        let Some(label_id) = self.label_id else {
+            return Ok(None);
+        };
+
+        let loader = ctx.data::<DataLoader<LabelLoader>>()?;
+
+        Ok(loader.load_one(label_id).await?)
     }
 }
