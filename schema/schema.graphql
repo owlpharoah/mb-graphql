@@ -8,7 +8,8 @@ type Artist {
 	ended: Boolean!
 	beginDate: PartialDate
 	endDate: PartialDate
-	releaseGroup: [ReleaseGroup!]!
+	releaseGroups: [ReleaseGroup!]!
+	releases: [Release!]!
 }
 
 type Label {
@@ -20,6 +21,11 @@ type Label {
 	beginDate: PartialDate
 	endDate: PartialDate
 	firstReleaseDate: PartialDate
+}
+
+type LabelInfo {
+	catalogNumber: String
+	label: Label
 }
 
 type PartialDate {
@@ -65,6 +71,7 @@ type Release {
 	asin: [String!]
 	country: String
 	releaseGroup: ReleaseGroup
+	labelInfo: [LabelInfo!]!
 }
 
 type ReleaseGroup {
@@ -74,7 +81,7 @@ type ReleaseGroup {
 	type: Int
 	secondaryType: [Int!]
 	firstReleaseDate: PartialDate
-	release: [Release!]!
+	releases: [Release!]!
 }
 
 """
