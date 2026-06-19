@@ -71,7 +71,7 @@ async fn artist_release_groups_are_loaded() {
     {
         artist(mbid:"5441c29d-3602-4898-b1a1-b77fa23b8e50"){
             name
-            releaseGroup{
+            releaseGroups{
                 name
                 type
                 firstReleaseDate{
@@ -95,7 +95,7 @@ async fn artist_release_groups_are_loaded() {
 
     assert_eq!(json["artist"]["name"], "David Bowie");
 
-    let release_groups = json["artist"]["releaseGroup"].as_array().unwrap();
+    let release_groups = json["artist"]["releaseGroups"].as_array().unwrap();
 
     assert!(!release_groups.is_empty());
 }
@@ -113,7 +113,7 @@ async fn artists_release_groups_are_loaded() {
             ]
         ){
             name
-            releaseGroup{
+            releaseGroups{
                 name
                 type
                 firstReleaseDate{
@@ -139,9 +139,9 @@ async fn artists_release_groups_are_loaded() {
 
     assert_eq!(artists.len(), 2);
 
-    assert!(!artists[0]["releaseGroup"].as_array().unwrap().is_empty());
+    assert!(!artists[0]["releaseGroups"].as_array().unwrap().is_empty());
 
-    assert!(!artists[1]["releaseGroup"].as_array().unwrap().is_empty());
+    assert!(!artists[1]["releaseGroups"].as_array().unwrap().is_empty());
 }
 
 #[tokio::test]
@@ -178,7 +178,7 @@ async fn artists_returns_empty_for_unknown_mbids() {
             ]
         ){
             name
-            releaseGroup{
+            releaseGroups{
                 name
                 type
                 firstReleaseDate{
