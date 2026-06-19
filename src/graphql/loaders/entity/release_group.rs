@@ -43,7 +43,7 @@ impl Loader<i32> for ReleaseGroupLoader {
                         mbid: row.gid,
                         name: row.name,
                         disambiguation: row.comment,
-                        release_group_type: row.primary_type.map(|x| x as i32),
+                        release_group_type: row.primary_type,
                         id: row.id,
                         artist_credit: row.artist_credit,
                     },

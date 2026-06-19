@@ -131,7 +131,7 @@ impl Recording {
             None => None,
         };
 
-        return Ok(pdate);
+        Ok(pdate)
     }
     async fn isrc(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
         let pool = ctx.data::<PgPool>()?;

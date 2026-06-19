@@ -143,7 +143,7 @@ impl ReleaseGroup {
             )
         });
 
-        return Ok(pdate);
+        Ok(pdate)
     }
 
     async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {

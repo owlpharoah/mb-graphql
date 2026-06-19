@@ -157,7 +157,7 @@ impl Release {
             None => None,
         };
 
-        return Ok(pdate);
+        Ok(pdate)
     }
 
     async fn asin(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Vec<String>>> {
@@ -176,7 +176,7 @@ impl Release {
         .fetch_all(pool)
         .await?;
 
-        return Ok(if row.is_empty() { None } else { Some(row) });
+        Ok(if row.is_empty() { None } else { Some(row) })
     }
 
     async fn country(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
@@ -194,7 +194,7 @@ impl Release {
         .fetch_optional(pool)
         .await?;
 
-        return Ok(row);
+        Ok(row)
     }
 
     //backward
