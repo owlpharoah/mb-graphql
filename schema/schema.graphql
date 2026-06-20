@@ -28,6 +28,15 @@ type LabelInfo {
 	label: Label
 }
 
+type Medium {
+	mbid: UUID!
+	format: Int
+	position: Int!
+	name: String!
+	trackCount: Int!
+	tracks: [Track!]!
+}
+
 type PartialDate {
 	year: Int
 	month: Int
@@ -72,6 +81,7 @@ type Release {
 	country: String
 	releaseGroup: ReleaseGroup
 	labelInfo: [LabelInfo!]!
+	medium: [Medium!]!
 }
 
 type ReleaseGroup {
@@ -82,6 +92,14 @@ type ReleaseGroup {
 	secondaryType: [Int!]
 	firstReleaseDate: PartialDate
 	releases: [Release!]!
+}
+
+type Track {
+	mbid: UUID!
+	name: String!
+	number: String!
+	position: Int!
+	length: Int
 }
 
 """

@@ -3,7 +3,10 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
+use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
+use crate::graphql::types::common::Medium;
 use crate::graphql::types::{
     self,
     common::LabelInfo,
@@ -222,5 +225,24 @@ impl Release {
         let loader = ctx.data::<DataLoader<LabelInfosByReleaseLoader>>()?;
 
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+
+    async fn medium(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Medium>> {
+        let medium_ids_loader = ctx.data::<DataLoader<MediumIdByReleaseLoader>>()?;
+        let medium_ids = medium_ids_loader
+            .load_one(self.id)
+            .await?
+            .unwrap_or_default();
+
+        if medium_ids.is_empty() {
+            return Ok(vec![]);
+        }
+        let medium_loader = ctx.data::<DataLoader<MediumLoader>>()?;
+        let mediums_map = medium_loader.load_many(medium_ids.clone()).await?;
+
+        Ok(medium_ids
+            .into_iter()
+            .filter_map(|id| mediums_map.get(&id).cloned())
+            .collect())
     }
 }

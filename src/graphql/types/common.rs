@@ -2,7 +2,14 @@ use async_graphql::{ComplexObject, Context, SimpleObject, dataloader::DataLoader
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::graphql::{loaders::entity::label::LabelLoader, types::label::Label};
+use crate::graphql::{
+    self,
+    loaders::{
+        entity::{label::LabelLoader, tracks::TrackLoader},
+        relationship::track_id_by_medium::TrackIdByMediumLoader,
+    },
+    types::label::Label,
+};
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 pub struct PartialDate {
@@ -76,23 +83,33 @@ pub struct ReleaseEvent {
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 pub struct Track {
     pub mbid: Uuid,
-    pub title: String,
+    pub name: String,
     pub number: String,
     pub position: i32,
     pub length: Option<i32>,
-    // recording: Recording
+    #[graphql(skip)]
+    pub artist_credit: i32,
+    #[graphql(skip)]
+    pub recording_id: i32,
+    #[graphql(skip)]
+    pub medium: i32,
     #[graphql(skip)]
     pub id: i32,
 }
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
+#[graphql(complex)]
 pub struct Medium {
-    pub format: Option<String>,
+    pub mbid: Uuid,
+    pub format: Option<i32>,
     pub position: i32,
-    pub title: Option<String>,
+    pub name: String,
     #[graphql(name = "trackCount")]
     pub track_count: i32,
-    pub tracks: Vec<Track>,
+    #[graphql(skip)]
+    pub id: i32,
+    #[graphql(skip)]
+    pub release: i32,
 }
 
 impl PartialDate {
@@ -115,5 +132,28 @@ impl LabelInfo {
         let loader = ctx.data::<DataLoader<LabelLoader>>()?;
 
         Ok(loader.load_one(label_id).await?)
+    }
+}
+
+#[ComplexObject]
+impl Medium {
+    async fn tracks(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Track>> {
+        let track_ids_loader = ctx.data::<DataLoader<TrackIdByMediumLoader>>()?;
+        let track_ids = track_ids_loader
+            .load_one(self.id)
+            .await?
+            .unwrap_or_default();
+
+        if track_ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let tracks_loader = ctx.data::<DataLoader<TrackLoader>>()?;
+        let tracks_map = tracks_loader.load_many(track_ids.clone()).await?;
+
+        Ok(track_ids
+            .into_iter()
+            .filter_map(|id| tracks_map.get(&id).cloned())
+            .collect())
     }
 }
