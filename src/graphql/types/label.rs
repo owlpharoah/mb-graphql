@@ -1,9 +1,14 @@
-use async_graphql::{ComplexObject, Context, Object, SimpleObject};
+use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::graphql::types::{self};
+use crate::graphql::{
+    loaders::{
+        entity::release::ReleaseLoader, relationship::release_id_by_label::ReleaseIdsByLabelLoader,
+    },
+    types::{self, release::Release},
+};
 use types::common::PartialDate;
 
 #[derive(sqlx::FromRow)]
@@ -140,7 +145,23 @@ impl LabelQuery {
 
 #[ComplexObject]
 impl Label {
-    async fn first_release_date(&self) -> async_graphql::Result<Option<PartialDate>> {
-        todo!()
+    async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+        let release_id_loader = ctx.data::<DataLoader<ReleaseIdsByLabelLoader>>()?;
+        let release_id = release_id_loader
+            .load_one(self.id)
+            .await?
+            .unwrap_or_default();
+
+        if release_id.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let release_loader = ctx.data::<DataLoader<ReleaseLoader>>()?;
+        let release_map = release_loader.load_many(release_id.clone()).await?;
+
+        Ok(release_id
+            .into_iter()
+            .filter_map(|id| release_map.get(&id).cloned())
+            .collect())
     }
 }

@@ -20,7 +20,7 @@ type Label {
 	ended: Boolean!
 	beginDate: PartialDate
 	endDate: PartialDate
-	firstReleaseDate: PartialDate
+	release: [Release!]!
 }
 
 type LabelInfo {
@@ -64,6 +64,7 @@ type Recording {
 	video: Boolean!
 	firstReleaseDate: PartialDate
 	isrc: String
+	release: [Release!]!
 }
 
 type Release {
@@ -82,6 +83,12 @@ type Release {
 	releaseGroup: ReleaseGroup
 	labelInfo: [LabelInfo!]!
 	medium: [Medium!]!
+	releaseEvents: [ReleaseEvent!]!
+}
+
+type ReleaseEvent {
+	date: PartialDate
+	country: Int
 }
 
 type ReleaseGroup {
@@ -100,6 +107,7 @@ type Track {
 	number: String!
 	position: Int!
 	length: Int
+	recording: Recording
 }
 
 """

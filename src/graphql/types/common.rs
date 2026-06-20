@@ -3,12 +3,11 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::graphql::{
-    self,
     loaders::{
-        entity::{label::LabelLoader, tracks::TrackLoader},
+        entity::{label::LabelLoader, recording::RecordingLoader, tracks::TrackLoader},
         relationship::track_id_by_medium::TrackIdByMediumLoader,
     },
-    types::label::Label,
+    types::{label::Label, recording::Recording},
 };
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
@@ -76,11 +75,12 @@ pub struct LabelInfo {
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 pub struct ReleaseEvent {
     pub date: Option<PartialDate>,
-    pub country: Option<String>,
+    pub country: Option<i32>,
 }
 
 //todo-----
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
+#[graphql(complex)]
 pub struct Track {
     pub mbid: Uuid,
     pub name: String,
@@ -155,5 +155,13 @@ impl Medium {
             .into_iter()
             .filter_map(|id| tracks_map.get(&id).cloned())
             .collect())
+    }
+}
+
+#[ComplexObject]
+impl Track {
+    async fn recording(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Recording>> {
+        let recording_loader = ctx.data::<DataLoader<RecordingLoader>>()?;
+        Ok(recording_loader.load_one(self.recording_id).await?)
     }
 }

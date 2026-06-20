@@ -2,6 +2,7 @@ use async_graphql::{EmptyMutation, EmptySubscription, Schema, dataloader::DataLo
 
 use crate::graphql::loaders::entity::label::LabelLoader;
 use crate::graphql::loaders::entity::medium::MediumLoader;
+use crate::graphql::loaders::entity::recording::RecordingLoader;
 use crate::graphql::loaders::entity::release::ReleaseLoader;
 use crate::graphql::loaders::entity::release_group::ReleaseGroupLoader;
 use crate::graphql::loaders::entity::tracks::TrackLoader;
@@ -9,8 +10,11 @@ use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader;
 use crate::graphql::loaders::relationship::release_id_by_artist::ReleaseIdsByArtistLoader;
+use crate::graphql::loaders::relationship::release_id_by_label::ReleaseIdsByLabelLoader;
+use crate::graphql::loaders::relationship::release_id_by_recording::ReleaseIdsByRecordingLoader;
 use crate::graphql::loaders::relationship::release_id_by_release_group::ReleaseIdByReleaseGroupLoader;
 use crate::graphql::loaders::relationship::track_id_by_medium::TrackIdByMediumLoader;
+use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
 use crate::graphql::query::QueryRoot;
 
 pub type AppSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
@@ -25,6 +29,8 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let l_entity_loader = DataLoader::new(LabelLoader { pool: pool.clone() }, tokio::spawn);
     let medium_entity_loader = DataLoader::new(MediumLoader { pool: pool.clone() }, tokio::spawn);
     let track_entity_loader = DataLoader::new(TrackLoader { pool: pool.clone() }, tokio::spawn);
+    let recording_entity_loader =
+        DataLoader::new(RecordingLoader { pool: pool.clone() }, tokio::spawn);
 
     let rg_a_loader = DataLoader::new(
         ReleaseGroupIdsByArtistLoader { pool: pool.clone() },
@@ -46,9 +52,19 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         DataLoader::new(MediumIdByReleaseLoader { pool: pool.clone() }, tokio::spawn);
     let track_medium_loader =
         DataLoader::new(TrackIdByMediumLoader { pool: pool.clone() }, tokio::spawn);
+    let release_event_release_loader = DataLoader::new(
+        ReleaseEventsByReleaseLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+    let release_recording_loader = DataLoader::new(
+        ReleaseIdsByRecordingLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+    let release_label_loader =
+        DataLoader::new(ReleaseIdsByLabelLoader { pool: pool.clone() }, tokio::spawn);
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
-        .limit_depth(5)
+        .limit_depth(10)
         .limit_complexity(200)
         .data(pool)
         .data(rg_entity_loader)
@@ -56,12 +72,16 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(l_entity_loader)
         .data(medium_entity_loader)
         .data(track_entity_loader)
+        .data(recording_entity_loader)
         .data(rg_a_loader)
         .data(r_a_loader)
         .data(r_rg_loader)
         .data(li_r_loader)
         .data(medium_release_loader)
         .data(track_medium_loader)
+        .data(release_event_release_loader)
+        .data(release_recording_loader)
+        .data(release_label_loader)
         .finish()
 }
 

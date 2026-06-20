@@ -6,7 +6,8 @@ use uuid::Uuid;
 use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
-use crate::graphql::types::common::Medium;
+use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
+use crate::graphql::types::common::{Medium, ReleaseEvent};
 use crate::graphql::types::{
     self,
     common::LabelInfo,
@@ -244,5 +245,11 @@ impl Release {
             .into_iter()
             .filter_map(|id| mediums_map.get(&id).cloned())
             .collect())
+    }
+
+    async fn release_events(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseEvent>> {
+        let loader = ctx.data::<DataLoader<ReleaseEventsByReleaseLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }
