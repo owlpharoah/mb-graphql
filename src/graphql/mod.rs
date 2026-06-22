@@ -6,6 +6,9 @@ use crate::graphql::loaders::entity::recording::RecordingLoader;
 use crate::graphql::loaders::entity::release::ReleaseLoader;
 use crate::graphql::loaders::entity::release_group::ReleaseGroupLoader;
 use crate::graphql::loaders::entity::tracks::TrackLoader;
+use crate::graphql::loaders::iso_code_1_by_area::IsoCode1ByAreaLoader;
+use crate::graphql::loaders::iso_code_2_by_area::IsoCode2ByAreaLoader;
+use crate::graphql::loaders::iso_code_3_by_area::IsoCode3ByAreaLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader;
@@ -62,6 +65,9 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     );
     let release_label_loader =
         DataLoader::new(ReleaseIdsByLabelLoader { pool: pool.clone() }, tokio::spawn);
+    let iso_1_loader = DataLoader::new(IsoCode1ByAreaLoader { pool: pool.clone() }, tokio::spawn);
+    let iso_2_loader = DataLoader::new(IsoCode2ByAreaLoader { pool: pool.clone() }, tokio::spawn);
+    let iso_3_loader = DataLoader::new(IsoCode3ByAreaLoader { pool: pool.clone() }, tokio::spawn);
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
@@ -82,6 +88,9 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(release_event_release_loader)
         .data(release_recording_loader)
         .data(release_label_loader)
+        .data(iso_1_loader)
+        .data(iso_2_loader)
+        .data(iso_3_loader)
         .finish()
 }
 

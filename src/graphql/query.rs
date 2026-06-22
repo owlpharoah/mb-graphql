@@ -1,6 +1,7 @@
 use async_graphql::MergedObject;
 
 use crate::graphql::types;
+use crate::graphql::types::area::AreaQuery;
 use crate::graphql::types::label::LabelQuery;
 use crate::graphql::types::recording::RecordingQuery;
 use crate::graphql::types::release::ReleaseQuery;
@@ -14,4 +15,5 @@ pub struct QueryRoot(
     pub ReleaseQuery,
     pub RecordingQuery,
     pub LabelQuery,
+    pub AreaQuery,
 );
