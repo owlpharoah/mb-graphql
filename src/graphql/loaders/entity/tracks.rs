@@ -1,9 +1,9 @@
+use crate::graphql::types::common::Track;
 use async_graphql::dataloader::Loader;
 use sqlx::PgPool;
 use std::collections::HashMap;
+use tracing::info;
 use uuid::Uuid;
-
-use crate::graphql::types::common::Track;
 
 pub struct TrackLoader {
     pub pool: PgPool,
@@ -27,6 +27,7 @@ impl Loader<i32> for TrackLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+        info!(count = ids.len(), "TrackLoader batch load");
         let rows = sqlx::query_as::<_, TrackRow>(
             r#"SELECT
             id,
@@ -45,7 +46,7 @@ impl Loader<i32> for TrackLoader {
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
+        info!(rows = rows.len(), "TrackLoader query returned");
         Ok(rows
             .into_iter()
             .map(|row| {

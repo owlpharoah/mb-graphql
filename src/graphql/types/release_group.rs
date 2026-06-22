@@ -1,6 +1,7 @@
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::graphql::{
@@ -147,9 +148,15 @@ impl ReleaseGroup {
     }
 
     async fn releases(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+        info!(rg_id = self.id, "rg.releases resolver called");
+
         let rg_ids = ctx.data::<DataLoader<ReleaseIdByReleaseGroupLoader>>()?;
         let ids = rg_ids.load_one(self.id).await?.unwrap_or_default();
-
+        info!(
+            rg_id = self.id,
+            releases_count = ids.len(),
+            "Release ids loaded"
+        );
         if ids.is_empty() {
             return Ok(vec![]);
         }

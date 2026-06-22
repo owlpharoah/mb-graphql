@@ -1,15 +1,15 @@
-use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
-use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
-use uuid::Uuid;
-
 use crate::graphql::{
     loaders::{
         entity::release::ReleaseLoader, relationship::release_id_by_label::ReleaseIdsByLabelLoader,
     },
     types::{self, release::Release},
 };
+use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
+use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
+use tracing::info;
 use types::common::PartialDate;
+use uuid::Uuid;
 
 #[derive(sqlx::FromRow)]
 pub struct LabelRow {
@@ -146,12 +146,18 @@ impl LabelQuery {
 #[ComplexObject]
 impl Label {
     async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+        info!(label_id = self.id, "Label.releases resolver called");
+
         let release_id_loader = ctx.data::<DataLoader<ReleaseIdsByLabelLoader>>()?;
         let release_id = release_id_loader
             .load_one(self.id)
             .await?
             .unwrap_or_default();
-
+        info!(
+            label_id = self.id,
+            releases_count = release_id.len(),
+            "Release ids loaded"
+        );
         if release_id.is_empty() {
             return Ok(vec![]);
         }

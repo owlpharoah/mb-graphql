@@ -1,8 +1,8 @@
+use crate::graphql::types::common::{PartialDate, ReleaseEvent};
 use async_graphql::dataloader::Loader;
 use sqlx::PgPool;
 use std::collections::HashMap;
-
-use crate::graphql::types::common::{PartialDate, ReleaseEvent};
+use tracing::info;
 
 #[derive(sqlx::FromRow)]
 struct ReleaseReleaseEventRow {
@@ -22,6 +22,10 @@ impl Loader<i32> for ReleaseEventsByReleaseLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, release_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+        info!(
+            count = release_ids.len(),
+            "ReleaseEventsByReleaseLoader batch load"
+        );
         let rows = sqlx::query_as::<_, ReleaseReleaseEventRow>(
             "SELECT release, date_year, date_month, date_day,country FROM release_event WHERE release = ANY($1)",
         )
@@ -29,7 +33,10 @@ impl Loader<i32> for ReleaseEventsByReleaseLoader {
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
+        info!(
+            rows = rows.len(),
+            "ReleaseEventsByReleaseLoader query returned"
+        );
         let mut result: HashMap<i32, Vec<ReleaseEvent>> = HashMap::new();
         for row in rows {
             result.entry(row.release).or_default().push(ReleaseEvent {

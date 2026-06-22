@@ -1,8 +1,3 @@
-use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
-use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
-use uuid::Uuid;
-
 use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
@@ -13,7 +8,12 @@ use crate::graphql::types::{
     common::LabelInfo,
     release_group::{ReleaseGroup, ReleaseGroupRow},
 };
+use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
+use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
+use tracing::info;
 use types::common::PartialDate;
+use uuid::Uuid;
 
 #[derive(sqlx::FromRow)]
 pub struct ReleaseRow {
@@ -223,18 +223,26 @@ impl Release {
     }
 
     async fn label_info(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<LabelInfo>> {
+        info!(release_id = self.id, "Release.label_info resolver called");
+
         let loader = ctx.data::<DataLoader<LabelInfosByReleaseLoader>>()?;
 
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 
     async fn medium(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Medium>> {
+        info!(release_id = self.id, "Release.medium resolver called");
+
         let medium_ids_loader = ctx.data::<DataLoader<MediumIdByReleaseLoader>>()?;
         let medium_ids = medium_ids_loader
             .load_one(self.id)
             .await?
             .unwrap_or_default();
-
+        info!(
+            release_id = self.id,
+            medium_count = medium_ids.len(),
+            "Release ids loaded"
+        );
         if medium_ids.is_empty() {
             return Ok(vec![]);
         }
@@ -248,6 +256,11 @@ impl Release {
     }
 
     async fn release_events(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseEvent>> {
+        info!(
+            release_id = self.id,
+            "Release.release_events resolver called"
+        );
+
         let loader = ctx.data::<DataLoader<ReleaseEventsByReleaseLoader>>()?;
 
         Ok(loader.load_one(self.id).await?.unwrap_or_default())

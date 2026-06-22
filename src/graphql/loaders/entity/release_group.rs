@@ -1,9 +1,9 @@
+use crate::graphql::types::release_group::ReleaseGroup;
 use async_graphql::dataloader::Loader;
 use sqlx::PgPool;
 use std::collections::HashMap;
+use tracing::info;
 use uuid::Uuid;
-
-use crate::graphql::types::release_group::ReleaseGroup;
 
 #[derive(sqlx::FromRow)]
 struct ReleaseGroupRow {
@@ -25,6 +25,7 @@ impl Loader<i32> for ReleaseGroupLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+        info!(count = ids.len(), "ReleaseGroupLoader batch load");
         let rows = sqlx::query_as::<_, ReleaseGroupRow>(
             r#"SELECT id, gid, name, artist_credit, comment, type
                FROM release_group WHERE id = ANY($1)"#,
@@ -33,6 +34,7 @@ impl Loader<i32> for ReleaseGroupLoader {
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        info!(rows = rows.len(), "ReleaseGroupLoader query returned");
 
         Ok(rows
             .into_iter()

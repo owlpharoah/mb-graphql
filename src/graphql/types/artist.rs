@@ -1,6 +1,7 @@
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::graphql::{
@@ -139,8 +140,16 @@ impl ArtistQuery {
 #[ComplexObject]
 impl Artist {
     async fn release_groups(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseGroup>> {
+        info!(artist_id = self.id, "Artist.release_groups resolver called");
+
         let artist_ids = ctx.data::<DataLoader<ReleaseGroupIdsByArtistLoader>>()?;
         let ids = artist_ids.load_one(self.id).await?.unwrap_or_default();
+
+        info!(
+            artist_id = self.id,
+            release_group_count = ids.len(),
+            "Release group ids loaded"
+        );
 
         if ids.is_empty() {
             return Ok(vec![]);
@@ -155,9 +164,14 @@ impl Artist {
             .collect())
     }
     async fn releases(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+        info!(artist_id = self.id, "Artist.releases resolver called");
         let artist_ids = ctx.data::<DataLoader<ReleaseIdsByArtistLoader>>()?;
         let ids = artist_ids.load_one(self.id).await?.unwrap_or_default();
-
+        info!(
+            artist_id = self.id,
+            releases_count = ids.len(),
+            "Release ids loaded"
+        );
         if ids.is_empty() {
             return Ok(vec![]);
         }

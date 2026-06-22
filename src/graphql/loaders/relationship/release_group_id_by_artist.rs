@@ -1,6 +1,7 @@
 use async_graphql::dataloader::Loader;
 use sqlx::PgPool;
 use std::collections::HashMap;
+use tracing::info;
 
 #[derive(sqlx::FromRow)]
 struct ArtistReleaseGroupIdRow {
@@ -17,6 +18,10 @@ impl Loader<i32> for ReleaseGroupIdsByArtistLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, artist_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+        info!(
+            count = artist_ids.len(),
+            "ReleaseGroupIdsByArtistLoader batch load"
+        );
         let rows = sqlx::query_as::<_, ArtistReleaseGroupIdRow>(
             "SELECT artist, release_group FROM artist_release_group WHERE artist = ANY($1)",
         )
@@ -24,6 +29,10 @@ impl Loader<i32> for ReleaseGroupIdsByArtistLoader {
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        info!(
+            rows = rows.len(),
+            "ReleaseGroupIdsByArtistLoader query returned"
+        );
 
         let mut result: HashMap<i32, Vec<i32>> = HashMap::new();
         for row in rows {

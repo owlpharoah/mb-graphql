@@ -1,8 +1,8 @@
+use crate::graphql::types::release::{Release, ReleaseRow};
 use async_graphql::dataloader::Loader;
 use sqlx::PgPool;
 use std::collections::HashMap;
-
-use crate::graphql::types::release::{Release, ReleaseRow};
+use tracing::info;
 
 pub struct ReleaseLoader {
     pub pool: PgPool,
@@ -13,6 +13,7 @@ impl Loader<i32> for ReleaseLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+        info!(count = ids.len(), "ReleaseLoader batch load");
         let rows = sqlx::query_as::<_, ReleaseRow>(
             r#"SELECT
                 id,
@@ -33,7 +34,7 @@ impl Loader<i32> for ReleaseLoader {
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
+        info!(rows = rows.len(), "ReleaseLoader query returned");
         Ok(rows
             .into_iter()
             .map(|row| {

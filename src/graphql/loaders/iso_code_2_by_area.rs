@@ -1,7 +1,7 @@
 use async_graphql::dataloader::Loader;
 use sqlx::PgPool;
 use std::collections::HashMap;
-
+use tracing::info;
 #[derive(sqlx::FromRow)]
 pub struct AreaISOCodeRow {
     area: i32,
@@ -17,6 +17,7 @@ impl Loader<i32> for IsoCode2ByAreaLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, area_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+        info!(count = area_ids.len(), "IsoCode2ByAreaLoader batch load");
         let rows = sqlx::query_as::<_, AreaISOCodeRow>(
             "SELECT
                 area,code
@@ -27,7 +28,7 @@ impl Loader<i32> for IsoCode2ByAreaLoader {
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
+        info!(rows = rows.len(), "IsoCode2ByAreaLoader query returned");
         let mut result: HashMap<i32, Vec<String>> = HashMap::new();
         for row in rows {
             result.entry(row.area).or_default().push(row.code);
