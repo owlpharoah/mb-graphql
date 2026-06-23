@@ -1,9 +1,17 @@
 use crate::graphql::{
     loaders::{
-        entity::release::ReleaseLoader, rating_recording::RecordingRatingLoader,
-        relationship::release_id_by_recording::ReleaseIdsByRecordingLoader,
+        entity::{artist_credit::ArtistCreditLoader, release::ReleaseLoader},
+        rating_recording::RecordingRatingLoader,
+        relationship::{
+            artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader,
+            release_id_by_recording::ReleaseIdsByRecordingLoader,
+        },
     },
-    types::{self, common::Rating, release::Release},
+    types::{
+        self,
+        common::{ArtistCredit, Rating},
+        release::Release,
+    },
 };
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
@@ -17,7 +25,6 @@ pub struct RecordingRow {
     pub id: i32,
     pub gid: Uuid,
     pub name: String,
-    pub artist_credit: i32,
     pub comment: Option<String>,
     pub length: Option<i32>,
     pub video: bool,
@@ -33,8 +40,6 @@ pub struct Recording {
 
     #[graphql(skip)]
     pub id: i32,
-    #[graphql(skip)]
-    pub artist_credit: i32,
 }
 
 impl From<RecordingRow> for Recording {
@@ -46,7 +51,6 @@ impl From<RecordingRow> for Recording {
             length: r.length,
             video: r.video,
             id: r.id,
-            artist_credit: r.artist_credit,
         }
     }
 }
@@ -69,7 +73,6 @@ impl RecordingQuery {
                 id,
                 gid,
                 name,
-                artist_credit,
                 comment,
                 length,
                 video
@@ -99,7 +102,6 @@ impl RecordingQuery {
                 id,
                 gid,
                 name,
-                artist_credit,
                 comment,
                 length,
                 video
@@ -185,5 +187,19 @@ impl Recording {
         info!(recording_id = self.id, "Recording.rating resolver called");
         let loader = ctx.data::<DataLoader<RecordingRatingLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
+        info!(
+            recording_id = self.id,
+            "Recording.artist_credit resolver called"
+        );
+
+        let id_loader = ctx.data::<DataLoader<ArtistCreditIdByReleaseGroupLoader>>()?;
+        let Some(credit_id) = id_loader.load_one(self.id).await? else {
+            return Ok(vec![]);
+        };
+
+        let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
+        Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
 }

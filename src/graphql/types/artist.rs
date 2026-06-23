@@ -23,26 +23,26 @@ use crate::graphql::{
 use types::common::PartialDate;
 
 #[derive(sqlx::FromRow)]
-struct ArtistRow {
-    id: i32,
-    gid: Uuid,
-    name: String,
-    sort_name: String,
-    comment: Option<String>,
+pub struct ArtistRow {
+    pub id: i32,
+    pub gid: Uuid,
+    pub name: String,
+    pub sort_name: String,
+    pub comment: Option<String>,
     #[sqlx(rename = "type")]
-    artist_type: Option<i32>,
-    gender: Option<i32>,
-    area: Option<i32>,
-    ended: bool,
-    begin_date_year: Option<i16>,
-    begin_date_month: Option<i16>,
-    begin_date_day: Option<i16>,
-    end_date_year: Option<i16>,
-    end_date_month: Option<i16>,
-    end_date_day: Option<i16>,
+    pub artist_type: Option<i32>,
+    pub gender: Option<i32>,
+    pub area: Option<i32>,
+    pub ended: bool,
+    pub begin_date_year: Option<i16>,
+    pub begin_date_month: Option<i16>,
+    pub begin_date_day: Option<i16>,
+    pub end_date_year: Option<i16>,
+    pub end_date_month: Option<i16>,
+    pub end_date_day: Option<i16>,
 
-    begin_area: Option<i32>,
-    end_area: Option<i32>,
+    pub begin_area: Option<i32>,
+    pub end_area: Option<i32>,
 }
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]

@@ -19,7 +19,6 @@ impl Loader<i32> for ReleaseLoader {
                 id,
                 gid,
                 name,
-                artist_credit,
                 release_group,
                 status,
                 packaging,
@@ -52,7 +51,6 @@ impl Loader<i32> for ReleaseLoader {
                         script: row.script,
                         release_group: row.release_group,
                         id: row.id,
-                        artist_credit: row.artist_credit,
                     },
                 )
             })

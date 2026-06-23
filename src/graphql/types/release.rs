@@ -1,8 +1,10 @@
+use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
 use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
+use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
-use crate::graphql::types::common::{Medium, ReleaseEvent};
+use crate::graphql::types::common::{ArtistCredit, Medium, ReleaseEvent};
 use crate::graphql::types::{
     self,
     common::LabelInfo,
@@ -20,7 +22,6 @@ pub struct ReleaseRow {
     pub id: i32,
     pub gid: Uuid,
     pub name: String,
-    pub artist_credit: i32,
     pub release_group: i32,
     pub status: Option<i32>,
     pub packaging: Option<i32>,
@@ -46,8 +47,6 @@ pub struct Release {
     #[graphql(skip)]
     pub id: i32,
     #[graphql(skip)]
-    pub artist_credit: i32,
-    #[graphql(skip)]
     pub release_group: i32,
 }
 
@@ -65,7 +64,6 @@ impl From<ReleaseRow> for Release {
             script: r.script,
             release_group: r.release_group,
             id: r.id,
-            artist_credit: r.artist_credit,
         }
     }
 }
@@ -88,7 +86,6 @@ impl ReleaseQuery {
                 id,
                 gid,
                 name,
-                artist_credit,
                 release_group,
                 status,
                 packaging,
@@ -123,7 +120,6 @@ impl ReleaseQuery {
                 id,
                 gid,
                 name,
-                artist_credit,
                 release_group,
                 status,
                 packaging,
@@ -211,7 +207,7 @@ impl Release {
         let pool = ctx.data::<PgPool>()?;
 
         let row = sqlx::query_as::<_, ReleaseGroupRow>(
-            "SELECT rg.id, rg.gid, rg.name, rg.comment, rg.type, rg.artist_credit
+            "SELECT rg.id, rg.gid, rg.name, rg.comment, rg.type
                         FROM release_group rg JOIN release r ON rg.id = r.release_group
                         WHERE r.id = $1",
         )
@@ -264,5 +260,19 @@ impl Release {
         let loader = ctx.data::<DataLoader<ReleaseEventsByReleaseLoader>>()?;
 
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+    async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
+        info!(
+            release_id = self.id,
+            "Release.artist_credit resolver called"
+        );
+
+        let id_loader = ctx.data::<DataLoader<ArtistCreditIdByReleaseLoader>>()?;
+        let Some(credit_id) = id_loader.load_one(self.id).await? else {
+            return Ok(vec![]);
+        };
+
+        let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
+        Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
 }

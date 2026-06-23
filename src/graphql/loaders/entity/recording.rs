@@ -19,7 +19,6 @@ impl Loader<i32> for RecordingLoader {
                 id,
                 gid,
                 name,
-                artist_credit,
                 comment,
                 length,
                 video
@@ -44,7 +43,6 @@ impl Loader<i32> for RecordingLoader {
                         length: row.length,
                         video: row.video,
                         id: row.id,
-                        artist_credit: row.artist_credit,
                     },
                 )
             })

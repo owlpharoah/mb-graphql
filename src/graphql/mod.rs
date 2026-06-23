@@ -1,5 +1,7 @@
 use async_graphql::{EmptyMutation, EmptySubscription, Schema, dataloader::DataLoader};
 
+use crate::graphql::loaders::entity::artist::ArtistLoader;
+use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
 use crate::graphql::loaders::entity::label::LabelLoader;
 use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::entity::recording::RecordingLoader;
@@ -15,6 +17,9 @@ use crate::graphql::loaders::rating_artist::ArtistRatingLoader;
 use crate::graphql::loaders::rating_label::LabelRatingLoader;
 use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
 use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
+use crate::graphql::loaders::relationship::artist_credit_id_recording::ArtistCreditIdByRecordingLoader;
+use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
+use crate::graphql::loaders::relationship::artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader;
 use crate::graphql::loaders::relationship::release_id_by_artist::ReleaseIdsByArtistLoader;
@@ -30,6 +35,7 @@ use crate::graphql::loaders::relationship::tag_id_by_release_group::TagIdsByRele
 use crate::graphql::loaders::relationship::track_id_by_medium::TrackIdByMediumLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
 use crate::graphql::query::QueryRoot;
+use crate::graphql::types::artist;
 
 pub type AppSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
 
@@ -46,6 +52,9 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let tag_entity_loader = DataLoader::new(TagLoader { pool: pool.clone() }, tokio::spawn);
     let recording_entity_loader =
         DataLoader::new(RecordingLoader { pool: pool.clone() }, tokio::spawn);
+    let artist_credit_entity_loader =
+        DataLoader::new(ArtistCreditLoader { pool: pool.clone() }, tokio::spawn);
+    let artist_entity_loader = DataLoader::new(ArtistLoader { pool: pool.clone() }, tokio::spawn);
 
     let rg_a_loader = DataLoader::new(
         ReleaseGroupIdsByArtistLoader { pool: pool.clone() },
@@ -106,6 +115,19 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         tokio::spawn,
     );
 
+    let artist_credit_release_group_loader = DataLoader::new(
+        ArtistCreditIdByReleaseGroupLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+    let artist_credit_release_loader = DataLoader::new(
+        ArtistCreditIdByReleaseLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+    let artist_credit_recording_group_loader = DataLoader::new(
+        ArtistCreditIdByRecordingLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
         .limit_complexity(200)
@@ -117,6 +139,8 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(track_entity_loader)
         .data(recording_entity_loader)
         .data(tag_entity_loader)
+        .data(artist_credit_entity_loader)
+        .data(artist_entity_loader)
         .data(rg_a_loader)
         .data(r_a_loader)
         .data(r_rg_loader)
@@ -139,6 +163,9 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(rating_label_loader)
         .data(rating_recording_loader)
         .data(rating_release_group_loader)
+        .data(artist_credit_recording_group_loader)
+        .data(artist_credit_release_group_loader)
+        .data(artist_credit_release_loader)
         .finish()
 }
 

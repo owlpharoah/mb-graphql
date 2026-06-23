@@ -10,7 +10,6 @@ struct ReleaseGroupRow {
     id: i32,
     gid: Uuid,
     name: String,
-    artist_credit: i32,
     comment: Option<String>,
     #[sqlx(rename = "type")]
     primary_type: Option<i32>,
@@ -27,7 +26,7 @@ impl Loader<i32> for ReleaseGroupLoader {
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "ReleaseGroupLoader batch load");
         let rows = sqlx::query_as::<_, ReleaseGroupRow>(
-            r#"SELECT id, gid, name, artist_credit, comment, type
+            r#"SELECT id, gid, name, comment, type
                FROM release_group WHERE id = ANY($1)"#,
         )
         .bind(ids)
@@ -47,7 +46,6 @@ impl Loader<i32> for ReleaseGroupLoader {
                         disambiguation: row.comment,
                         release_group_type: row.primary_type,
                         id: row.id,
-                        artist_credit: row.artist_credit,
                     },
                 )
             })

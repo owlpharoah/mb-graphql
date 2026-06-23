@@ -6,10 +6,18 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
-        entity::release::ReleaseLoader, rating_release_group::ReleaseGroupRatingLoader,
-        relationship::release_id_by_release_group::ReleaseIdByReleaseGroupLoader,
+        entity::{artist_credit::ArtistCreditLoader, release::ReleaseLoader},
+        rating_release_group::ReleaseGroupRatingLoader,
+        relationship::{
+            artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader,
+            release_id_by_release_group::ReleaseIdByReleaseGroupLoader,
+        },
     },
-    types::{self, common::Rating, release::Release},
+    types::{
+        self,
+        common::{ArtistCredit, Rating},
+        release::Release,
+    },
 };
 use types::common::PartialDate;
 
@@ -18,7 +26,6 @@ pub struct ReleaseGroupRow {
     id: i32,
     gid: Uuid,
     name: String,
-    artist_credit: i32,
     comment: Option<String>,
     #[sqlx(rename = "type")]
     release_group_type: Option<i32>,
@@ -34,8 +41,6 @@ pub struct ReleaseGroup {
 
     #[graphql(skip)]
     pub id: i32,
-    #[graphql(skip)]
-    pub artist_credit: i32,
 }
 
 impl From<ReleaseGroupRow> for ReleaseGroup {
@@ -46,7 +51,6 @@ impl From<ReleaseGroupRow> for ReleaseGroup {
             disambiguation: r.comment,
             release_group_type: r.release_group_type,
             id: r.id,
-            artist_credit: r.artist_credit,
         }
     }
 }
@@ -65,7 +69,7 @@ impl ReleaseGroupQuery {
         let uuid = Uuid::parse_str(&mbid)?;
 
         let row = sqlx::query_as::<_, ReleaseGroupRow>(
-            "SELECT id, gid, name,comment,type,artist_credit
+            "SELECT id, gid, name,comment,type
                         FROM release_group
                         WHERE gid = $1",
         )
@@ -88,7 +92,7 @@ impl ReleaseGroupQuery {
             .collect::<Result<_, _>>()?;
 
         let rows = sqlx::query_as::<_, ReleaseGroupRow>(
-            "SELECT id, gid, name,comment,type,artist_credit
+            "SELECT id, gid, name,comment,type
                         FROM release_group
                         WHERE gid = ANY($1)",
         )
@@ -173,5 +177,19 @@ impl ReleaseGroup {
         info!(rg_id = self.id, "ReleaseGroup.rating resolver called");
         let loader = ctx.data::<DataLoader<ReleaseGroupRatingLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
+        info!(
+            release_group_id = self.id,
+            "ReleaseGroup.artist_credit resolver called"
+        );
+
+        let id_loader = ctx.data::<DataLoader<ArtistCreditIdByReleaseGroupLoader>>()?;
+        let Some(credit_id) = id_loader.load_one(self.id).await? else {
+            return Ok(vec![]);
+        };
+
+        let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
+        Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
 }

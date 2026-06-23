@@ -4,10 +4,13 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
-        entity::{label::LabelLoader, recording::RecordingLoader, tracks::TrackLoader},
+        entity::{
+            artist::ArtistLoader, artist_credit::ArtistCreditLoader, label::LabelLoader,
+            recording::RecordingLoader, tracks::TrackLoader,
+        },
         relationship::track_id_by_medium::TrackIdByMediumLoader,
     },
-    types::{label::Label, recording::Recording},
+    types::{artist::Artist, label::Label, recording::Recording},
 };
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
@@ -61,11 +64,13 @@ pub struct Rating {
 
 //todo----
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
+#[graphql(complex)]
 pub struct ArtistCredit {
     pub name: String,
     #[graphql(name = "joinPhrase")]
     pub join_phrase: String,
-    // artist: Artist
+    #[graphql(skip)]
+    pub artist_id: i32,
 }
 
 //todo-----
@@ -169,5 +174,20 @@ impl Track {
     async fn recording(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Recording>> {
         let recording_loader = ctx.data::<DataLoader<RecordingLoader>>()?;
         Ok(recording_loader.load_one(self.recording_id).await?)
+    }
+    async fn artist_credit(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::Result<Option<Vec<ArtistCredit>>> {
+        let artist_credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
+        Ok(artist_credit_loader.load_one(self.artist_credit).await?)
+    }
+}
+
+#[ComplexObject]
+impl ArtistCredit {
+    async fn artist(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Artist>> {
+        let artist_loader = ctx.data::<DataLoader<ArtistLoader>>()?;
+        Ok(artist_loader.load_one(self.artist_id).await?)
     }
 }
