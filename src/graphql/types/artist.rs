@@ -6,11 +6,13 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
-        entity::release::ReleaseLoader, entity::release_group::ReleaseGroupLoader,
-        relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
-        relationship::release_id_by_artist::ReleaseIdsByArtistLoader,
+        entity::{release::ReleaseLoader, release_group::ReleaseGroupLoader, tag::TagLoader},
+        relationship::{
+            release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
+            release_id_by_artist::ReleaseIdsByArtistLoader, tag_id_by_artist::TagIdsByArtistLoader,
+        },
     },
-    types::{self, release::Release, release_group::ReleaseGroup},
+    types::{self, common::Tag, release::Release, release_group::ReleaseGroup},
 };
 use types::common::PartialDate;
 
@@ -182,6 +184,30 @@ impl Artist {
         Ok(ids
             .into_iter()
             .filter_map(|id| r_map.get(&id).cloned())
+            .collect())
+    }
+    async fn tags(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Tag>> {
+        info!(artist_id = self.id, "Artist.tags resolver called");
+
+        let id_loader = ctx.data::<DataLoader<TagIdsByArtistLoader>>()?;
+        let refs = id_loader.load_one(self.id).await?.unwrap_or_default();
+
+        if refs.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let tag_ids: Vec<i32> = refs.iter().map(|r| r.tag_id).collect();
+        let name_loader = ctx.data::<DataLoader<TagLoader>>()?;
+        let name_map = name_loader.load_many(tag_ids).await?;
+
+        Ok(refs
+            .into_iter()
+            .filter_map(|r| {
+                name_map.get(&r.tag_id).map(|name| Tag {
+                    name: name.clone(),
+                    count: r.count,
+                })
+            })
             .collect())
     }
 }

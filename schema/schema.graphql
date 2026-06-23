@@ -1,3 +1,16 @@
+type Area {
+	mbid: UUID!
+	name: String!
+	disambiguation: String
+	type: Int
+	ended: Boolean!
+	beginDate: PartialDate
+	endDate: PartialDate
+	isoCode1: [String!]!
+	isoCode2: [String!]!
+	isoCode3: [String!]!
+}
+
 type Artist {
 	mbid: UUID!
 	name: String!
@@ -54,6 +67,8 @@ type QueryRoot {
 	recordings(mbids: [String!]!): [Recording!]!
 	label(mbid: String!): Label
 	labels(mbids: [String!]!): [Label!]!
+	area(mbid: String!): Area
+	areas(mbids: [String!]!): [Area!]!
 }
 
 type Recording {

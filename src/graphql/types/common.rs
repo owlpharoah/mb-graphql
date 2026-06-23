@@ -39,6 +39,12 @@ pub struct Tag {
     pub count: i32,
 }
 
+#[derive(Clone)]
+pub struct TagRef {
+    pub tag_id: i32,
+    pub count: i32,
+}
+
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 pub struct Genre {
     pub mbid: Uuid,

@@ -5,6 +5,7 @@ use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::entity::recording::RecordingLoader;
 use crate::graphql::loaders::entity::release::ReleaseLoader;
 use crate::graphql::loaders::entity::release_group::ReleaseGroupLoader;
+use crate::graphql::loaders::entity::tag::TagLoader;
 use crate::graphql::loaders::entity::tracks::TrackLoader;
 use crate::graphql::loaders::iso_code_1_by_area::IsoCode1ByAreaLoader;
 use crate::graphql::loaders::iso_code_2_by_area::IsoCode2ByAreaLoader;
@@ -16,6 +17,12 @@ use crate::graphql::loaders::relationship::release_id_by_artist::ReleaseIdsByArt
 use crate::graphql::loaders::relationship::release_id_by_label::ReleaseIdsByLabelLoader;
 use crate::graphql::loaders::relationship::release_id_by_recording::ReleaseIdsByRecordingLoader;
 use crate::graphql::loaders::relationship::release_id_by_release_group::ReleaseIdByReleaseGroupLoader;
+use crate::graphql::loaders::relationship::tag_id_by_area::TagIdsByAreaLoader;
+use crate::graphql::loaders::relationship::tag_id_by_artist::TagIdsByArtistLoader;
+use crate::graphql::loaders::relationship::tag_id_by_label::TagIdsByLabelLoader;
+use crate::graphql::loaders::relationship::tag_id_by_recording::TagIdsByRecordingLoader;
+use crate::graphql::loaders::relationship::tag_id_by_release::TagIdsByReleaseLoader;
+use crate::graphql::loaders::relationship::tag_id_by_release_group::TagIdsByReleaseGroupLoader;
 use crate::graphql::loaders::relationship::track_id_by_medium::TrackIdByMediumLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
 use crate::graphql::query::QueryRoot;
@@ -32,6 +39,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let l_entity_loader = DataLoader::new(LabelLoader { pool: pool.clone() }, tokio::spawn);
     let medium_entity_loader = DataLoader::new(MediumLoader { pool: pool.clone() }, tokio::spawn);
     let track_entity_loader = DataLoader::new(TrackLoader { pool: pool.clone() }, tokio::spawn);
+    let tag_entity_loader = DataLoader::new(TagLoader { pool: pool.clone() }, tokio::spawn);
     let recording_entity_loader =
         DataLoader::new(RecordingLoader { pool: pool.clone() }, tokio::spawn);
 
@@ -69,6 +77,20 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let iso_2_loader = DataLoader::new(IsoCode2ByAreaLoader { pool: pool.clone() }, tokio::spawn);
     let iso_3_loader = DataLoader::new(IsoCode3ByAreaLoader { pool: pool.clone() }, tokio::spawn);
 
+    let tag_artist_loader =
+        DataLoader::new(TagIdsByArtistLoader { pool: pool.clone() }, tokio::spawn);
+    let tag_release_group_loader = DataLoader::new(
+        TagIdsByReleaseGroupLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+    let tag_release_loader =
+        DataLoader::new(TagIdsByReleaseLoader { pool: pool.clone() }, tokio::spawn);
+    let tag_area_loader = DataLoader::new(TagIdsByAreaLoader { pool: pool.clone() }, tokio::spawn);
+    let tag_label_loader =
+        DataLoader::new(TagIdsByLabelLoader { pool: pool.clone() }, tokio::spawn);
+    let tag_recording_loader =
+        DataLoader::new(TagIdsByRecordingLoader { pool: pool.clone() }, tokio::spawn);
+
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
         .limit_complexity(200)
@@ -79,6 +101,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(medium_entity_loader)
         .data(track_entity_loader)
         .data(recording_entity_loader)
+        .data(tag_entity_loader)
         .data(rg_a_loader)
         .data(r_a_loader)
         .data(r_rg_loader)
@@ -91,6 +114,12 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(iso_1_loader)
         .data(iso_2_loader)
         .data(iso_3_loader)
+        .data(tag_recording_loader)
+        .data(tag_area_loader)
+        .data(tag_label_loader)
+        .data(tag_artist_loader)
+        .data(tag_release_group_loader)
+        .data(tag_release_loader)
         .finish()
 }
 
