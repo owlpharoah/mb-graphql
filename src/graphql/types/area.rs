@@ -1,15 +1,16 @@
+use crate::graphql::{
+    loaders::{
+        entity::tag::TagLoader, iso_code_1_by_area::IsoCode1ByAreaLoader,
+        iso_code_2_by_area::IsoCode2ByAreaLoader, iso_code_3_by_area::IsoCode3ByAreaLoader,
+        relationship::tag_id_by_area::TagIdsByAreaLoader,
+    },
+    types::common::{PartialDate, Tag},
+};
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use tracing::info;
 use uuid::Uuid;
-
-use crate::graphql::{
-    loaders::{
-        iso_code_1_by_area::IsoCode1ByAreaLoader, iso_code_2_by_area::IsoCode2ByAreaLoader,
-        iso_code_3_by_area::IsoCode3ByAreaLoader,
-    },
-    types::common::PartialDate,
-};
 
 #[derive(sqlx::FromRow)]
 struct AreaRow {
@@ -152,5 +153,29 @@ impl Area {
         let loader = ctx.data::<DataLoader<IsoCode3ByAreaLoader>>()?;
 
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+    async fn tags(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Tag>> {
+        info!(area_id = self.id, "Area.tags resolver called");
+
+        let id_loader = ctx.data::<DataLoader<TagIdsByAreaLoader>>()?;
+        let refs = id_loader.load_one(self.id).await?.unwrap_or_default();
+
+        if refs.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let tag_ids: Vec<i32> = refs.iter().map(|r| r.tag_id).collect();
+        let name_loader = ctx.data::<DataLoader<TagLoader>>()?;
+        let name_map = name_loader.load_many(tag_ids).await?;
+
+        Ok(refs
+            .into_iter()
+            .filter_map(|r| {
+                name_map.get(&r.tag_id).map(|name| Tag {
+                    name: name.clone(),
+                    count: r.count,
+                })
+            })
+            .collect())
     }
 }

@@ -62,7 +62,6 @@ pub struct Rating {
     pub votes_count: Option<i32>,
 }
 
-//todo----
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 #[graphql(complex)]
 pub struct ArtistCredit {
@@ -73,7 +72,6 @@ pub struct ArtistCredit {
     pub artist_id: i32,
 }
 
-//todo-----
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 #[graphql(complex)]
 pub struct LabelInfo {
@@ -89,7 +87,7 @@ pub struct ReleaseEvent {
     pub country: Option<i32>,
 }
 
-//todo-----
+//--todo
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 #[graphql(complex)]
 pub struct Track {
@@ -108,6 +106,7 @@ pub struct Track {
     pub id: i32,
 }
 
+//todo--
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 #[graphql(complex)]
 pub struct Medium {

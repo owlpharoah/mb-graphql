@@ -9,6 +9,7 @@ type Area {
 	isoCode1: [String!]!
 	isoCode2: [String!]!
 	isoCode3: [String!]!
+	tags: [Tag!]!
 }
 
 type Artist {

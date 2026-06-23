@@ -35,7 +35,6 @@ use crate::graphql::loaders::relationship::tag_id_by_release_group::TagIdsByRele
 use crate::graphql::loaders::relationship::track_id_by_medium::TrackIdByMediumLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
 use crate::graphql::query::QueryRoot;
-use crate::graphql::types::artist;
 
 pub type AppSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
 
