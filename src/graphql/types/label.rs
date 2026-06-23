@@ -1,8 +1,9 @@
 use crate::graphql::{
     loaders::{
-        entity::release::ReleaseLoader, relationship::release_id_by_label::ReleaseIdsByLabelLoader,
+        entity::release::ReleaseLoader, rating_label::LabelRatingLoader,
+        relationship::release_id_by_label::ReleaseIdsByLabelLoader,
     },
-    types::{self, release::Release},
+    types::{self, common::Rating, release::Release},
 };
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
@@ -169,5 +170,10 @@ impl Label {
             .into_iter()
             .filter_map(|id| release_map.get(&id).cloned())
             .collect())
+    }
+    async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
+        info!(label_id = self.id, "Label.rating resolver called");
+        let loader = ctx.data::<DataLoader<LabelRatingLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }

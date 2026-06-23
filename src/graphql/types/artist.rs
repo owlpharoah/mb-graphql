@@ -7,12 +7,18 @@ use uuid::Uuid;
 use crate::graphql::{
     loaders::{
         entity::{release::ReleaseLoader, release_group::ReleaseGroupLoader, tag::TagLoader},
+        rating_artist::ArtistRatingLoader,
         relationship::{
             release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
             release_id_by_artist::ReleaseIdsByArtistLoader, tag_id_by_artist::TagIdsByArtistLoader,
         },
     },
-    types::{self, common::Tag, release::Release, release_group::ReleaseGroup},
+    types::{
+        self,
+        common::{Rating, Tag},
+        release::Release,
+        release_group::ReleaseGroup,
+    },
 };
 use types::common::PartialDate;
 
@@ -209,5 +215,10 @@ impl Artist {
                 })
             })
             .collect())
+    }
+    async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
+        info!(artist_id = self.id, "Artist.rating resolver called");
+        let loader = ctx.data::<DataLoader<ArtistRatingLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }

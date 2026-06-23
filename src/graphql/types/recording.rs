@@ -1,9 +1,9 @@
 use crate::graphql::{
     loaders::{
-        entity::release::ReleaseLoader,
+        entity::release::ReleaseLoader, rating_recording::RecordingRatingLoader,
         relationship::release_id_by_recording::ReleaseIdsByRecordingLoader,
     },
-    types::{self, release::Release},
+    types::{self, common::Rating, release::Release},
 };
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
@@ -180,5 +180,10 @@ impl Recording {
             .into_iter()
             .filter_map(|id| release_map.get(&id).cloned())
             .collect())
+    }
+    async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
+        info!(recording_id = self.id, "Recording.rating resolver called");
+        let loader = ctx.data::<DataLoader<RecordingRatingLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }

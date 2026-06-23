@@ -54,9 +54,9 @@ pub struct Genre {
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
 pub struct Rating {
-    pub value: i32,
+    pub value: i16,
     #[graphql(name = "votesCount")]
-    pub votes_count: i32,
+    pub votes_count: Option<i32>,
 }
 
 //todo----

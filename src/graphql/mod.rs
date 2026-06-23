@@ -11,6 +11,10 @@ use crate::graphql::loaders::iso_code_1_by_area::IsoCode1ByAreaLoader;
 use crate::graphql::loaders::iso_code_2_by_area::IsoCode2ByAreaLoader;
 use crate::graphql::loaders::iso_code_3_by_area::IsoCode3ByAreaLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
+use crate::graphql::loaders::rating_artist::ArtistRatingLoader;
+use crate::graphql::loaders::rating_label::LabelRatingLoader;
+use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
+use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader;
 use crate::graphql::loaders::relationship::release_id_by_artist::ReleaseIdsByArtistLoader;
@@ -91,6 +95,17 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let tag_recording_loader =
         DataLoader::new(TagIdsByRecordingLoader { pool: pool.clone() }, tokio::spawn);
 
+    let rating_artist_loader =
+        DataLoader::new(ArtistRatingLoader { pool: pool.clone() }, tokio::spawn);
+    let rating_label_loader =
+        DataLoader::new(LabelRatingLoader { pool: pool.clone() }, tokio::spawn);
+    let rating_recording_loader =
+        DataLoader::new(RecordingRatingLoader { pool: pool.clone() }, tokio::spawn);
+    let rating_release_group_loader = DataLoader::new(
+        ReleaseGroupRatingLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
         .limit_complexity(200)
@@ -120,6 +135,10 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(tag_artist_loader)
         .data(tag_release_group_loader)
         .data(tag_release_loader)
+        .data(rating_artist_loader)
+        .data(rating_label_loader)
+        .data(rating_recording_loader)
+        .data(rating_release_group_loader)
         .finish()
 }
 

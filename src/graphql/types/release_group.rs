@@ -6,10 +6,10 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
-        entity::release::ReleaseLoader,
+        entity::release::ReleaseLoader, rating_release_group::ReleaseGroupRatingLoader,
         relationship::release_id_by_release_group::ReleaseIdByReleaseGroupLoader,
     },
-    types::{self, release::Release},
+    types::{self, common::Rating, release::Release},
 };
 use types::common::PartialDate;
 
@@ -168,5 +168,10 @@ impl ReleaseGroup {
             .into_iter()
             .filter_map(|id| r_map.get(&id).cloned())
             .collect())
+    }
+    async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
+        info!(rg_id = self.id, "ReleaseGroup.rating resolver called");
+        let loader = ctx.data::<DataLoader<ReleaseGroupRatingLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }
