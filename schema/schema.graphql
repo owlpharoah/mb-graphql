@@ -23,6 +23,14 @@ type Artist {
 	endDate: PartialDate
 	releaseGroups: [ReleaseGroup!]!
 	releases: [Release!]!
+	tags: [Tag!]!
+	rating: Rating
+}
+
+type ArtistCredit {
+	name: String!
+	joinPhrase: String!
+	artist: Artist
 }
 
 type Label {
@@ -34,6 +42,7 @@ type Label {
 	beginDate: PartialDate
 	endDate: PartialDate
 	release: [Release!]!
+	rating: Rating
 }
 
 type LabelInfo {
@@ -71,6 +80,11 @@ type QueryRoot {
 	areas(mbids: [String!]!): [Area!]!
 }
 
+type Rating {
+	value: Int!
+	votesCount: Int
+}
+
 type Recording {
 	mbid: UUID!
 	name: String!
@@ -80,6 +94,8 @@ type Recording {
 	firstReleaseDate: PartialDate
 	isrc: String
 	release: [Release!]!
+	rating: Rating
+	artistCredit: [ArtistCredit!]!
 }
 
 type Release {
@@ -99,6 +115,7 @@ type Release {
 	labelInfo: [LabelInfo!]!
 	medium: [Medium!]!
 	releaseEvents: [ReleaseEvent!]!
+	artistCredit: [ArtistCredit!]!
 }
 
 type ReleaseEvent {
@@ -114,6 +131,13 @@ type ReleaseGroup {
 	secondaryType: [Int!]
 	firstReleaseDate: PartialDate
 	releases: [Release!]!
+	rating: Rating
+	artistCredit: [ArtistCredit!]!
+}
+
+type Tag {
+	name: String!
+	count: Int!
 }
 
 type Track {
@@ -123,6 +147,7 @@ type Track {
 	position: Int!
 	length: Int
 	recording: Recording
+	artistCredit: [ArtistCredit!]
 }
 
 """
