@@ -1,10 +1,12 @@
 use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
+use crate::graphql::loaders::entity::genre::GenreLoader;
 use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
+use crate::graphql::loaders::relationship::genre_id_by_release::GenreIdsByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
-use crate::graphql::types::common::{ArtistCredit, Medium, ReleaseEvent};
+use crate::graphql::types::common::{ArtistCredit, Genre, Medium, ReleaseEvent};
 use crate::graphql::types::{
     self,
     common::LabelInfo,
@@ -274,5 +276,23 @@ impl Release {
 
         let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
         Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
+    }
+    async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
+        info!(release_id = self.id, "Release.genres resolver called");
+
+        let id_loader = ctx.data::<DataLoader<GenreIdsByReleaseLoader>>()?;
+        let ids = id_loader.load_one(self.id).await?.unwrap_or_default();
+
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let genre_loader = ctx.data::<DataLoader<GenreLoader>>()?;
+        let genre_map = genre_loader.load_many(ids.clone()).await?;
+
+        Ok(ids
+            .into_iter()
+            .filter_map(|id| genre_map.get(&id).cloned())
+            .collect())
     }
 }

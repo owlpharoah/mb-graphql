@@ -6,16 +6,20 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
-        entity::{release::ReleaseLoader, release_group::ReleaseGroupLoader, tag::TagLoader},
+        entity::{
+            genre::GenreLoader, release::ReleaseLoader, release_group::ReleaseGroupLoader,
+            tag::TagLoader,
+        },
         rating_artist::ArtistRatingLoader,
         relationship::{
+            genre_id_by_artist::GenreIdsByArtistLoader,
             release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
             release_id_by_artist::ReleaseIdsByArtistLoader, tag_id_by_artist::TagIdsByArtistLoader,
         },
     },
     types::{
         self,
-        common::{Rating, Tag},
+        common::{Genre, Rating, Tag},
         release::Release,
         release_group::ReleaseGroup,
     },
@@ -220,5 +224,23 @@ impl Artist {
         info!(artist_id = self.id, "Artist.rating resolver called");
         let loader = ctx.data::<DataLoader<ArtistRatingLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
+        info!(artist_id = self.id, "Artist.genres resolver called");
+
+        let id_loader = ctx.data::<DataLoader<GenreIdsByArtistLoader>>()?;
+        let ids = id_loader.load_one(self.id).await?.unwrap_or_default();
+
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let genre_loader = ctx.data::<DataLoader<GenreLoader>>()?;
+        let genre_map = genre_loader.load_many(ids.clone()).await?;
+
+        Ok(ids
+            .into_iter()
+            .filter_map(|id| genre_map.get(&id).cloned())
+            .collect())
     }
 }

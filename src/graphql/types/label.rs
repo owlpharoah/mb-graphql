@@ -1,9 +1,16 @@
 use crate::graphql::{
     loaders::{
-        entity::release::ReleaseLoader, rating_label::LabelRatingLoader,
-        relationship::release_id_by_label::ReleaseIdsByLabelLoader,
+        entity::{genre::GenreLoader, release::ReleaseLoader},
+        rating_label::LabelRatingLoader,
+        relationship::{
+            genre_id_by_label::GenreIdsByLabelLoader, release_id_by_label::ReleaseIdsByLabelLoader,
+        },
     },
-    types::{self, common::Rating, release::Release},
+    types::{
+        self,
+        common::{Genre, Rating},
+        release::Release,
+    },
 };
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
@@ -175,5 +182,23 @@ impl Label {
         info!(label_id = self.id, "Label.rating resolver called");
         let loader = ctx.data::<DataLoader<LabelRatingLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
+        info!(label_id = self.id, "Label.genres resolver called");
+
+        let id_loader = ctx.data::<DataLoader<GenreIdsByLabelLoader>>()?;
+        let ids = id_loader.load_one(self.id).await?.unwrap_or_default();
+
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let genre_loader = ctx.data::<DataLoader<GenreLoader>>()?;
+        let genre_map = genre_loader.load_many(ids.clone()).await?;
+
+        Ok(ids
+            .into_iter()
+            .filter_map(|id| genre_map.get(&id).cloned())
+            .collect())
     }
 }

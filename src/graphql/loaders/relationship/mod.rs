@@ -1,6 +1,11 @@
 pub mod artist_credit_id_recording;
 pub mod artist_credit_id_release;
 pub mod artist_credit_id_release_group;
+pub mod genre_id_by_artist;
+pub mod genre_id_by_label;
+pub mod genre_id_by_recording;
+pub mod genre_id_by_release;
+pub mod genre_id_by_release_group;
 pub mod medium_id_by_release;
 pub mod release_group_id_by_artist;
 pub mod release_id_by_artist;
