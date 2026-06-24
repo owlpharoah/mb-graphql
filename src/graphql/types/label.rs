@@ -1,5 +1,6 @@
 use crate::graphql::{
     loaders::{
+        annotations_label::LabelAnnotationLoader,
         entity::{genre::GenreLoader, release::ReleaseLoader},
         rating_label::LabelRatingLoader,
         relationship::{
@@ -200,5 +201,10 @@ impl Label {
             .into_iter()
             .filter_map(|id| genre_map.get(&id).cloned())
             .collect())
+    }
+    async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        info!(label_id = self.id, "Label.annotation resolver called");
+        let loader = ctx.data::<DataLoader<LabelAnnotationLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }

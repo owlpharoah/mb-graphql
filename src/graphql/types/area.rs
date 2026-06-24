@@ -1,8 +1,8 @@
 use crate::graphql::{
     loaders::{
-        entity::tag::TagLoader, iso_code_1_by_area::IsoCode1ByAreaLoader,
-        iso_code_2_by_area::IsoCode2ByAreaLoader, iso_code_3_by_area::IsoCode3ByAreaLoader,
-        relationship::tag_id_by_area::TagIdsByAreaLoader,
+        annotations_area::AreaAnnotationLoader, entity::tag::TagLoader,
+        iso_code_1_by_area::IsoCode1ByAreaLoader, iso_code_2_by_area::IsoCode2ByAreaLoader,
+        iso_code_3_by_area::IsoCode3ByAreaLoader, relationship::tag_id_by_area::TagIdsByAreaLoader,
     },
     types::common::{PartialDate, Tag},
 };
@@ -177,5 +177,10 @@ impl Area {
                 })
             })
             .collect())
+    }
+    async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        info!(area_id = self.id, "Area.annotation resolver called");
+        let loader = ctx.data::<DataLoader<AreaAnnotationLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }

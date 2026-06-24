@@ -1,3 +1,4 @@
+use crate::graphql::loaders::annotations_release::ReleaseAnnotationLoader;
 use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
 use crate::graphql::loaders::entity::genre::GenreLoader;
 use crate::graphql::loaders::entity::medium::MediumLoader;
@@ -294,5 +295,10 @@ impl Release {
             .into_iter()
             .filter_map(|id| genre_map.get(&id).cloned())
             .collect())
+    }
+    async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        info!(release_id = self.id, "Release.annotation resolver called");
+        let loader = ctx.data::<DataLoader<ReleaseAnnotationLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }

@@ -1,6 +1,12 @@
 pub mod entity;
 pub mod relationship;
 
+pub mod annotations_area;
+pub mod annotations_artist;
+pub mod annotations_label;
+pub mod annotations_recording;
+pub mod annotations_release;
+pub mod annotations_release_group;
 pub mod iso_code_1_by_area;
 pub mod iso_code_2_by_area;
 pub mod iso_code_3_by_area;

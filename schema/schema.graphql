@@ -10,6 +10,7 @@ type Area {
 	isoCode2: [String!]!
 	isoCode3: [String!]!
 	tags: [Tag!]!
+	annotation: String
 }
 
 type Artist {
@@ -27,6 +28,7 @@ type Artist {
 	tags: [Tag!]!
 	rating: Rating
 	genres: [Genre!]!
+	annotation: String
 }
 
 type ArtistCredit {
@@ -52,6 +54,7 @@ type Label {
 	release: [Release!]!
 	rating: Rating
 	genres: [Genre!]!
+	annotation: String
 }
 
 type LabelInfo {
@@ -106,6 +109,7 @@ type Recording {
 	rating: Rating
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!
+	annotation: String
 }
 
 type Release {
@@ -127,6 +131,7 @@ type Release {
 	releaseEvents: [ReleaseEvent!]!
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!
+	annotation: String
 }
 
 type ReleaseEvent {
@@ -145,6 +150,7 @@ type ReleaseGroup {
 	rating: Rating
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!
+	annotation: String
 }
 
 type Tag {

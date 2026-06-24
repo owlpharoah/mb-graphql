@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
+        annotations_release_group::ReleaseGroupAnnotationLoader,
         entity::{artist_credit::ArtistCreditLoader, genre::GenreLoader, release::ReleaseLoader},
         rating_release_group::ReleaseGroupRatingLoader,
         relationship::{
@@ -210,5 +211,10 @@ impl ReleaseGroup {
             .into_iter()
             .filter_map(|id| genre_map.get(&id).cloned())
             .collect())
+    }
+    async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        info!(rg_id = self.id, "ReleaseGroup.annotation resolver called");
+        let loader = ctx.data::<DataLoader<ReleaseGroupAnnotationLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }

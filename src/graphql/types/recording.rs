@@ -1,5 +1,6 @@
 use crate::graphql::{
     loaders::{
+        annotations_recording::RecordingAnnotationLoader,
         entity::{artist_credit::ArtistCreditLoader, genre::GenreLoader, release::ReleaseLoader},
         rating_recording::RecordingRatingLoader,
         relationship::{
@@ -220,5 +221,13 @@ impl Recording {
             .into_iter()
             .filter_map(|id| genre_map.get(&id).cloned())
             .collect())
+    }
+    async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        info!(
+            recording_id = self.id,
+            "Recording.annotation resolver called"
+        );
+        let loader = ctx.data::<DataLoader<RecordingAnnotationLoader>>()?;
+        Ok(loader.load_one(self.id).await?)
     }
 }
