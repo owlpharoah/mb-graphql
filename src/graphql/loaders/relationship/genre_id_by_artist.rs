@@ -18,7 +18,10 @@ impl Loader<i32> for GenreIdsByArtistLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, artist_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
-        info!(count = artist_ids.len(), "GenreIdsByArtistLoader batch load");
+        info!(
+            count = artist_ids.len(),
+            "GenreIdsByArtistLoader batch load"
+        );
 
         let rows = sqlx::query_as::<_, ArtistGenreIdRow>(
             r#"SELECT at.artist AS artist, g.id AS id
