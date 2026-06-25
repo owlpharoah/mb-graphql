@@ -13,20 +13,20 @@ use tracing::info;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow)]
-struct AreaRow {
-    id: i32,
-    gid: Uuid,
-    name: String,
-    comment: Option<String>,
+pub struct AreaRow {
+    pub id: i32,
+    pub gid: Uuid,
+    pub name: String,
+    pub comment: Option<String>,
     #[sqlx(rename = "type")]
-    area_type: Option<i32>,
-    ended: bool,
-    begin_date_year: Option<i16>,
-    begin_date_month: Option<i16>,
-    begin_date_day: Option<i16>,
-    end_date_year: Option<i16>,
-    end_date_month: Option<i16>,
-    end_date_day: Option<i16>,
+    pub area_type: Option<i32>,
+    pub ended: bool,
+    pub begin_date_year: Option<i16>,
+    pub begin_date_month: Option<i16>,
+    pub begin_date_day: Option<i16>,
+    pub end_date_year: Option<i16>,
+    pub end_date_month: Option<i16>,
+    pub end_date_day: Option<i16>,
 }
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]

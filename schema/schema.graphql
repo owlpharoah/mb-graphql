@@ -29,6 +29,9 @@ type Artist {
 	rating: Rating
 	genres: [Genre!]!
 	annotation: String
+	area: Area
+	beginArea: Area
+	endArea: Area
 }
 
 type ArtistCredit {

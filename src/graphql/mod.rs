@@ -6,6 +6,7 @@ use crate::graphql::loaders::annotations_label::LabelAnnotationLoader;
 use crate::graphql::loaders::annotations_recording::RecordingAnnotationLoader;
 use crate::graphql::loaders::annotations_release::ReleaseAnnotationLoader;
 use crate::graphql::loaders::annotations_release_group::ReleaseGroupAnnotationLoader;
+use crate::graphql::loaders::entity::area::AreaLoader;
 use crate::graphql::loaders::entity::artist::ArtistLoader;
 use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
 use crate::graphql::loaders::entity::genre::GenreLoader;
@@ -24,6 +25,9 @@ use crate::graphql::loaders::rating_artist::ArtistRatingLoader;
 use crate::graphql::loaders::rating_label::LabelRatingLoader;
 use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
 use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
+use crate::graphql::loaders::relationship::area_id_by_artist::{
+    AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
+};
 use crate::graphql::loaders::relationship::artist_credit_id_recording::ArtistCreditIdByRecordingLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader;
@@ -67,6 +71,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         DataLoader::new(ArtistCreditLoader { pool: pool.clone() }, tokio::spawn);
     let artist_entity_loader = DataLoader::new(ArtistLoader { pool: pool.clone() }, tokio::spawn);
     let genre_entity_loader = DataLoader::new(GenreLoader { pool: pool.clone() }, tokio::spawn);
+    let area_entity_loader = DataLoader::new(AreaLoader { pool: pool.clone() }, tokio::spawn);
 
     let rg_a_loader = DataLoader::new(
         ReleaseGroupIdsByArtistLoader { pool: pool.clone() },
@@ -169,6 +174,16 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     );
     let annotations_label_loader =
         DataLoader::new(LabelAnnotationLoader { pool: pool.clone() }, tokio::spawn);
+    let area_artist_loader =
+        DataLoader::new(AreaIdsByArtistLoader { pool: pool.clone() }, tokio::spawn);
+    let begin_area_artist_loader = DataLoader::new(
+        BeginAreaIdsByArtistLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+    let end_area_artist_loader = DataLoader::new(
+        EndAreaIdsByArtistLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
@@ -184,6 +199,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(artist_credit_entity_loader)
         .data(artist_entity_loader)
         .data(genre_entity_loader)
+        .data(area_entity_loader)
         .data(rg_a_loader)
         .data(r_a_loader)
         .data(r_rg_loader)
@@ -220,6 +236,9 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(annotations_recording_loader)
         .data(annotations_release_group_loader)
         .data(annotations_release_loader)
+        .data(area_artist_loader)
+        .data(begin_area_artist_loader)
+        .data(end_area_artist_loader)
         .finish()
 }
 

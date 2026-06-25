@@ -1,3 +1,4 @@
+pub mod area;
 pub mod artist;
 pub mod artist_credit;
 pub mod genre;

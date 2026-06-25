@@ -8,18 +8,23 @@ use crate::graphql::{
     loaders::{
         annotations_artist::ArtistAnnotationLoader,
         entity::{
-            genre::GenreLoader, release::ReleaseLoader, release_group::ReleaseGroupLoader,
-            tag::TagLoader,
+            area::AreaLoader, genre::GenreLoader, release::ReleaseLoader,
+            release_group::ReleaseGroupLoader, tag::TagLoader,
         },
         rating_artist::ArtistRatingLoader,
         relationship::{
+            area_id_by_artist::{
+                AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
+            },
             genre_id_by_artist::GenreIdsByArtistLoader,
             release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
-            release_id_by_artist::ReleaseIdsByArtistLoader, tag_id_by_artist::TagIdsByArtistLoader,
+            release_id_by_artist::ReleaseIdsByArtistLoader,
+            tag_id_by_artist::TagIdsByArtistLoader,
         },
     },
     types::{
         self,
+        area::Area,
         common::{Genre, Rating, Tag},
         release::Release,
         release_group::ReleaseGroup,
@@ -248,5 +253,44 @@ impl Artist {
         info!(artist_id = self.id, "Artist.annotation resolver called");
         let loader = ctx.data::<DataLoader<ArtistAnnotationLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
+        info!(artist_id = self.id, "Artist.area resolver called");
+
+        let id_loader = ctx.data::<DataLoader<AreaIdsByArtistLoader>>()?;
+
+        let Some(area_id) = id_loader.load_one(self.id).await? else {
+            return Ok(None);
+        };
+
+        let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
+
+        Ok(area_loader.load_one(area_id).await?)
+    }
+    async fn begin_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
+        info!(artist_id = self.id, "Artist.area resolver called");
+
+        let id_loader = ctx.data::<DataLoader<BeginAreaIdsByArtistLoader>>()?;
+
+        let Some(area_id) = id_loader.load_one(self.id).await? else {
+            return Ok(None);
+        };
+
+        let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
+
+        Ok(area_loader.load_one(area_id).await?)
+    }
+    async fn end_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
+        info!(artist_id = self.id, "Artist.area resolver called");
+
+        let id_loader = ctx.data::<DataLoader<EndAreaIdsByArtistLoader>>()?;
+
+        let Some(area_id) = id_loader.load_one(self.id).await? else {
+            return Ok(None);
+        };
+
+        let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
+
+        Ok(area_loader.load_one(area_id).await?)
     }
 }
