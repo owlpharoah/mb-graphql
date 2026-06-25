@@ -130,7 +130,7 @@ impl ArtistQuery {
             .collect::<Result<_, _>>()?;
 
         let rows = sqlx::query_as::<_, ArtistRow>(
-            "SELECT id, gid, name, sort_name, comment,type, gender, area, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day,begin_area,end_area
+            "SELECT id, gid, name, sort_name, comment,type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day,
                         FROM artist
                         WHERE gid = ANY($1)",
         )

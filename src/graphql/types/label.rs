@@ -133,7 +133,6 @@ impl LabelQuery {
                 end_date_year,
                 end_date_month,
                 end_date_day,
-                area,
                 type,
                 comment,
                 ended,
