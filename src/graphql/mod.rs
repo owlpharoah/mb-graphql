@@ -28,6 +28,7 @@ use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
 use crate::graphql::loaders::relationship::area_id_by_artist::{
     AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
 };
+use crate::graphql::loaders::relationship::area_id_by_label::AreaIdByLabelLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_recording::ArtistCreditIdByRecordingLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader;
@@ -184,6 +185,8 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         EndAreaIdsByArtistLoader { pool: pool.clone() },
         tokio::spawn,
     );
+    let area_label_loader =
+        DataLoader::new(AreaIdByLabelLoader { pool: pool.clone() }, tokio::spawn);
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
@@ -239,6 +242,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(area_artist_loader)
         .data(begin_area_artist_loader)
         .data(end_area_artist_loader)
+        .data(area_label_loader)
         .finish()
 }
 

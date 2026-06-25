@@ -58,6 +58,7 @@ type Label {
 	rating: Rating
 	genres: [Genre!]!
 	annotation: String
+	area: Area
 }
 
 type LabelInfo {

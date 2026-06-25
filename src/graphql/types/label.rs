@@ -1,14 +1,16 @@
 use crate::graphql::{
     loaders::{
         annotations_label::LabelAnnotationLoader,
-        entity::{genre::GenreLoader, release::ReleaseLoader},
+        entity::{area::AreaLoader, genre::GenreLoader, release::ReleaseLoader},
         rating_label::LabelRatingLoader,
         relationship::{
-            genre_id_by_label::GenreIdsByLabelLoader, release_id_by_label::ReleaseIdsByLabelLoader,
+            area_id_by_label::AreaIdByLabelLoader, genre_id_by_label::GenreIdsByLabelLoader,
+            release_id_by_label::ReleaseIdsByLabelLoader,
         },
     },
     types::{
         self,
+        area::Area,
         common::{Genre, Rating},
         release::Release,
     },
@@ -31,7 +33,6 @@ pub struct LabelRow {
     pub end_date_year: Option<i16>,
     pub end_date_month: Option<i16>,
     pub end_date_day: Option<i16>,
-    pub area: Option<i32>,
     #[sqlx(rename = "type")]
     pub label_type: Option<i32>,
     pub comment: Option<String>,
@@ -54,8 +55,6 @@ pub struct Label {
 
     #[graphql(skip)]
     pub id: i32,
-    #[graphql(skip)]
-    pub area: Option<i32>,
 }
 
 impl From<LabelRow> for Label {
@@ -64,7 +63,6 @@ impl From<LabelRow> for Label {
             mbid: r.gid,
             name: r.name,
             disambiguation: r.comment,
-            area: r.area,
             label_type: r.label_type,
             ended: r.ended,
             begin_date: PartialDate::from_parts(
@@ -206,5 +204,18 @@ impl Label {
         info!(label_id = self.id, "Label.annotation resolver called");
         let loader = ctx.data::<DataLoader<LabelAnnotationLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
+        info!(label_id = self.id, "Label.area resolver called");
+
+        let id_loader = ctx.data::<DataLoader<AreaIdByLabelLoader>>()?;
+
+        let Some(area_id) = id_loader.load_one(self.id).await?.flatten() else {
+            return Ok(None);
+        };
+
+        let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
+
+        Ok(area_loader.load_one(area_id).await?)
     }
 }

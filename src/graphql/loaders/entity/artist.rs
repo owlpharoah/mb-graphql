@@ -37,7 +37,6 @@ impl Loader<i32> for ArtistLoader {
                         disambiguation: row.comment,
                         artist_type: row.artist_type,
                         gender: row.gender,
-                        area: row.area,
                         ended: row.ended,
                         begin_date: PartialDate::from_parts(
                             row.begin_date_year,
@@ -50,8 +49,6 @@ impl Loader<i32> for ArtistLoader {
                             row.end_date_day,
                         ),
                         id: row.id,
-                        begin_area: row.begin_area,
-                        end_area: row.end_area,
                     },
                 )
             })

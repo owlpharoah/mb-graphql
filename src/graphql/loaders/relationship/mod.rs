@@ -1,4 +1,5 @@
 pub mod area_id_by_artist;
+pub mod area_id_by_label;
 pub mod artist_credit_id_recording;
 pub mod artist_credit_id_release;
 pub mod artist_credit_id_release_group;

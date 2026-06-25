@@ -27,7 +27,6 @@ impl Loader<i32> for LabelLoader {
                 end_date_year,
                 end_date_month,
                 end_date_day,
-                area,
                 type,
                 comment,
                 ended,
@@ -50,7 +49,6 @@ impl Loader<i32> for LabelLoader {
                         name: row.name,
                         disambiguation: row.comment,
                         ended: row.ended,
-                        area: row.area,
                         begin_date: PartialDate::from_parts(
                             row.begin_date_year,
                             row.begin_date_month,

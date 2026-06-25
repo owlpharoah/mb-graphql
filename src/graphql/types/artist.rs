@@ -42,7 +42,6 @@ pub struct ArtistRow {
     #[sqlx(rename = "type")]
     pub artist_type: Option<i32>,
     pub gender: Option<i32>,
-    pub area: Option<i32>,
     pub ended: bool,
     pub begin_date_year: Option<i16>,
     pub begin_date_month: Option<i16>,
@@ -50,9 +49,6 @@ pub struct ArtistRow {
     pub end_date_year: Option<i16>,
     pub end_date_month: Option<i16>,
     pub end_date_day: Option<i16>,
-
-    pub begin_area: Option<i32>,
-    pub end_area: Option<i32>,
 }
 
 #[derive(SimpleObject, Clone, Serialize, Deserialize)]
@@ -74,12 +70,6 @@ pub struct Artist {
 
     #[graphql(skip)]
     pub id: i32,
-    #[graphql(skip)]
-    pub area: Option<i32>,
-    #[graphql(skip)]
-    pub begin_area: Option<i32>,
-    #[graphql(skip)]
-    pub end_area: Option<i32>,
 }
 
 impl From<ArtistRow> for Artist {
@@ -91,7 +81,6 @@ impl From<ArtistRow> for Artist {
             disambiguation: r.comment,
             artist_type: r.artist_type,
             gender: r.gender,
-            area: r.area,
             ended: r.ended,
             begin_date: PartialDate::from_parts(
                 r.begin_date_year,
@@ -100,8 +89,6 @@ impl From<ArtistRow> for Artist {
             ),
             end_date: PartialDate::from_parts(r.end_date_year, r.end_date_month, r.end_date_day),
             id: r.id,
-            begin_area: r.begin_area,
-            end_area: r.end_area,
         }
     }
 }
@@ -268,7 +255,7 @@ impl Artist {
         Ok(area_loader.load_one(area_id).await?)
     }
     async fn begin_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
-        info!(artist_id = self.id, "Artist.area resolver called");
+        info!(artist_id = self.id, "Artist.beginarea resolver called");
 
         let id_loader = ctx.data::<DataLoader<BeginAreaIdsByArtistLoader>>()?;
 
@@ -281,7 +268,7 @@ impl Artist {
         Ok(area_loader.load_one(area_id).await?)
     }
     async fn end_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
-        info!(artist_id = self.id, "Artist.area resolver called");
+        info!(artist_id = self.id, "Artist.endarea resolver called");
 
         let id_loader = ctx.data::<DataLoader<EndAreaIdsByArtistLoader>>()?;
 
