@@ -1,3 +1,4 @@
+use crate::graphql::loaders::alias_release::ReleaseAliasLoader;
 use crate::graphql::loaders::annotations_release::ReleaseAnnotationLoader;
 use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
 use crate::graphql::loaders::entity::genre::GenreLoader;
@@ -7,7 +8,7 @@ use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCredi
 use crate::graphql::loaders::relationship::genre_id_by_release::GenreIdsByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
-use crate::graphql::types::common::{ArtistCredit, Genre, Medium, ReleaseEvent};
+use crate::graphql::types::common::{Alias, ArtistCredit, Genre, Medium, ReleaseEvent};
 use crate::graphql::types::{
     self,
     common::LabelInfo,
@@ -300,5 +301,10 @@ impl Release {
         info!(release_id = self.id, "Release.annotation resolver called");
         let loader = ctx.data::<DataLoader<ReleaseAnnotationLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
+        info!(release_id = self.id, "Release.aliases resolver called");
+        let loader = ctx.data::<DataLoader<ReleaseAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

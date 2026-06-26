@@ -1,11 +1,19 @@
 use async_graphql::{EmptyMutation, EmptySubscription, Schema, dataloader::DataLoader};
 
+use crate::graphql::loaders::alias_area::AreaAliasLoader;
+use crate::graphql::loaders::alias_artist::ArtistAliasLoader;
+use crate::graphql::loaders::alias_label::LabelAliasLoader;
+use crate::graphql::loaders::alias_recording::RecordingAliasLoader;
+use crate::graphql::loaders::alias_release::ReleaseAliasLoader;
+use crate::graphql::loaders::alias_release_group::ReleaseGroupAliasLoader;
 use crate::graphql::loaders::annotations_area::AreaAnnotationLoader;
 use crate::graphql::loaders::annotations_artist::ArtistAnnotationLoader;
 use crate::graphql::loaders::annotations_label::LabelAnnotationLoader;
 use crate::graphql::loaders::annotations_recording::RecordingAnnotationLoader;
 use crate::graphql::loaders::annotations_release::ReleaseAnnotationLoader;
 use crate::graphql::loaders::annotations_release_group::ReleaseGroupAnnotationLoader;
+use crate::graphql::loaders::artist_ipi::ArtistIpiLoader;
+use crate::graphql::loaders::artist_isni::ArtistIsniLoader;
 use crate::graphql::loaders::entity::area::AreaLoader;
 use crate::graphql::loaders::entity::artist::ArtistLoader;
 use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
@@ -21,6 +29,8 @@ use crate::graphql::loaders::iso_code_1_by_area::IsoCode1ByAreaLoader;
 use crate::graphql::loaders::iso_code_2_by_area::IsoCode2ByAreaLoader;
 use crate::graphql::loaders::iso_code_3_by_area::IsoCode3ByAreaLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
+use crate::graphql::loaders::label_ipi::LabelIpiLoader;
+use crate::graphql::loaders::label_isni::LabelIsniLoader;
 use crate::graphql::loaders::rating_artist::ArtistRatingLoader;
 use crate::graphql::loaders::rating_label::LabelRatingLoader;
 use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
@@ -187,6 +197,18 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     );
     let area_label_loader =
         DataLoader::new(AreaIdByLabelLoader { pool: pool.clone() }, tokio::spawn);
+    let alias_area = DataLoader::new(AreaAliasLoader { pool: pool.clone() }, tokio::spawn);
+    let alias_label = DataLoader::new(LabelAliasLoader { pool: pool.clone() }, tokio::spawn);
+    let alias_recording =
+        DataLoader::new(RecordingAliasLoader { pool: pool.clone() }, tokio::spawn);
+    let alias_release = DataLoader::new(ReleaseAliasLoader { pool: pool.clone() }, tokio::spawn);
+    let alias_release_group =
+        DataLoader::new(ReleaseGroupAliasLoader { pool: pool.clone() }, tokio::spawn);
+    let alias_artist = DataLoader::new(ArtistAliasLoader { pool: pool.clone() }, tokio::spawn);
+    let ipi_artist = DataLoader::new(ArtistIpiLoader { pool: pool.clone() }, tokio::spawn);
+    let ipi_label = DataLoader::new(LabelIpiLoader { pool: pool.clone() }, tokio::spawn);
+    let isni_artist = DataLoader::new(ArtistIsniLoader { pool: pool.clone() }, tokio::spawn);
+    let isni_label = DataLoader::new(LabelIsniLoader { pool: pool.clone() }, tokio::spawn);
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
@@ -243,6 +265,16 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(begin_area_artist_loader)
         .data(end_area_artist_loader)
         .data(area_label_loader)
+        .data(alias_area)
+        .data(alias_artist)
+        .data(alias_label)
+        .data(alias_recording)
+        .data(alias_release)
+        .data(alias_release_group)
+        .data(isni_artist)
+        .data(isni_label)
+        .data(ipi_artist)
+        .data(ipi_label)
         .finish()
 }
 

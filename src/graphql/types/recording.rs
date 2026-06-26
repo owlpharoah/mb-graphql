@@ -1,5 +1,6 @@
 use crate::graphql::{
     loaders::{
+        alias_recording::RecordingAliasLoader,
         annotations_recording::RecordingAnnotationLoader,
         entity::{artist_credit::ArtistCreditLoader, genre::GenreLoader, release::ReleaseLoader},
         rating_recording::RecordingRatingLoader,
@@ -11,7 +12,7 @@ use crate::graphql::{
     },
     types::{
         self,
-        common::{ArtistCredit, Genre, Rating},
+        common::{Alias, ArtistCredit, Genre, Rating},
         release::Release,
     },
 };
@@ -229,5 +230,10 @@ impl Recording {
         );
         let loader = ctx.data::<DataLoader<RecordingAnnotationLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
+        info!(recording_id = self.id, "Recording.aliases resolver called");
+        let loader = ctx.data::<DataLoader<RecordingAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

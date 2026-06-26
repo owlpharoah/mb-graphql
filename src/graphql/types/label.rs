@@ -1,7 +1,10 @@
 use crate::graphql::{
     loaders::{
+        alias_label::LabelAliasLoader,
         annotations_label::LabelAnnotationLoader,
         entity::{area::AreaLoader, genre::GenreLoader, release::ReleaseLoader},
+        label_ipi::LabelIpiLoader,
+        label_isni::LabelIsniLoader,
         rating_label::LabelRatingLoader,
         relationship::{
             area_id_by_label::AreaIdByLabelLoader, genre_id_by_label::GenreIdsByLabelLoader,
@@ -11,7 +14,7 @@ use crate::graphql::{
     types::{
         self,
         area::Area,
-        common::{Genre, Rating},
+        common::{Alias, Genre, Rating},
         release::Release,
     },
 };
@@ -216,5 +219,21 @@ impl Label {
         let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
 
         Ok(area_loader.load_one(area_id).await?)
+    }
+    async fn ipis(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<String>> {
+        info!(label_id = self.id, "Label.ipis resolver called");
+        let loader = ctx.data::<DataLoader<LabelIpiLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+
+    async fn isnis(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<String>> {
+        info!(label_id = self.id, "Label.isnis resolver called");
+        let loader = ctx.data::<DataLoader<LabelIsniLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+    async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
+        info!(label_id = self.id, "Label.aliases resolver called");
+        let loader = ctx.data::<DataLoader<LabelAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

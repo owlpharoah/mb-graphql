@@ -1,10 +1,11 @@
 use crate::graphql::{
     loaders::{
-        annotations_area::AreaAnnotationLoader, entity::tag::TagLoader,
-        iso_code_1_by_area::IsoCode1ByAreaLoader, iso_code_2_by_area::IsoCode2ByAreaLoader,
-        iso_code_3_by_area::IsoCode3ByAreaLoader, relationship::tag_id_by_area::TagIdsByAreaLoader,
+        alias_area::AreaAliasLoader, annotations_area::AreaAnnotationLoader,
+        entity::tag::TagLoader, iso_code_1_by_area::IsoCode1ByAreaLoader,
+        iso_code_2_by_area::IsoCode2ByAreaLoader, iso_code_3_by_area::IsoCode3ByAreaLoader,
+        relationship::tag_id_by_area::TagIdsByAreaLoader,
     },
-    types::common::{PartialDate, Tag},
+    types::common::{Alias, PartialDate, Tag},
 };
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
@@ -182,5 +183,10 @@ impl Area {
         info!(area_id = self.id, "Area.annotation resolver called");
         let loader = ctx.data::<DataLoader<AreaAnnotationLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
+        info!(area_id = self.id, "Area.aliases resolver called");
+        let loader = ctx.data::<DataLoader<AreaAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
+        alias_release_group::ReleaseGroupAliasLoader,
         annotations_release_group::ReleaseGroupAnnotationLoader,
         entity::{artist_credit::ArtistCreditLoader, genre::GenreLoader, release::ReleaseLoader},
         rating_release_group::ReleaseGroupRatingLoader,
@@ -17,7 +18,7 @@ use crate::graphql::{
     },
     types::{
         self,
-        common::{ArtistCredit, Genre, Rating},
+        common::{Alias, ArtistCredit, Genre, Rating},
         release::Release,
     },
 };
@@ -216,5 +217,10 @@ impl ReleaseGroup {
         info!(rg_id = self.id, "ReleaseGroup.annotation resolver called");
         let loader = ctx.data::<DataLoader<ReleaseGroupAnnotationLoader>>()?;
         Ok(loader.load_one(self.id).await?)
+    }
+    async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
+        info!(rg_id = self.id, "ReleaseGroup.aliases resolver called");
+        let loader = ctx.data::<DataLoader<ReleaseGroupAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

@@ -1,3 +1,14 @@
+type Alias {
+	name: String!
+	sortName: String
+	type: String
+	locale: String
+	primary: Boolean
+	beginDate: PartialDate
+	endDate: PartialDate
+	ended: Boolean!
+}
+
 type Area {
 	mbid: UUID!
 	name: String!
@@ -11,6 +22,7 @@ type Area {
 	isoCode3: [String!]!
 	tags: [Tag!]!
 	annotation: String
+	alias: [Alias!]!
 }
 
 type Artist {
@@ -32,6 +44,9 @@ type Artist {
 	area: Area
 	beginArea: Area
 	endArea: Area
+	alias: [Alias!]!
+	ipis: [String!]!
+	isnis: [String!]!
 }
 
 type ArtistCredit {
@@ -59,6 +74,9 @@ type Label {
 	genres: [Genre!]!
 	annotation: String
 	area: Area
+	ipis: [String!]!
+	isnis: [String!]!
+	alias: [Alias!]!
 }
 
 type LabelInfo {
@@ -114,6 +132,7 @@ type Recording {
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!
 	annotation: String
+	alias: [Alias!]!
 }
 
 type Release {
@@ -136,6 +155,7 @@ type Release {
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!
 	annotation: String
+	alias: [Alias!]!
 }
 
 type ReleaseEvent {
@@ -155,6 +175,7 @@ type ReleaseGroup {
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!
 	annotation: String
+	alias: [Alias!]!
 }
 
 type Tag {

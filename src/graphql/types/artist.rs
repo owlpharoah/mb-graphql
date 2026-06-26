@@ -6,7 +6,10 @@ use uuid::Uuid;
 
 use crate::graphql::{
     loaders::{
+        alias_artist::ArtistAliasLoader,
         annotations_artist::ArtistAnnotationLoader,
+        artist_ipi::ArtistIpiLoader,
+        artist_isni::ArtistIsniLoader,
         entity::{
             area::AreaLoader, genre::GenreLoader, release::ReleaseLoader,
             release_group::ReleaseGroupLoader, tag::TagLoader,
@@ -25,7 +28,7 @@ use crate::graphql::{
     types::{
         self,
         area::Area,
-        common::{Genre, Rating, Tag},
+        common::{Alias, Genre, Rating, Tag},
         release::Release,
         release_group::ReleaseGroup,
     },
@@ -130,7 +133,7 @@ impl ArtistQuery {
             .collect::<Result<_, _>>()?;
 
         let rows = sqlx::query_as::<_, ArtistRow>(
-            "SELECT id, gid, name, sort_name, comment,type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day,
+            "SELECT id, gid, name, sort_name, comment,type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day
                         FROM artist
                         WHERE gid = ANY($1)",
         )
@@ -279,5 +282,21 @@ impl Artist {
         let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
 
         Ok(area_loader.load_one(area_id).await?)
+    }
+    async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
+        info!(artist_id = self.id, "Artist.aliases resolver called");
+        let loader = ctx.data::<DataLoader<ArtistAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+    async fn ipis(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<String>> {
+        info!(artist_id = self.id, "Artist.ipis resolver called");
+        let loader = ctx.data::<DataLoader<ArtistIpiLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+
+    async fn isnis(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<String>> {
+        info!(artist_id = self.id, "Artist.isnis resolver called");
+        let loader = ctx.data::<DataLoader<ArtistIsniLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }
