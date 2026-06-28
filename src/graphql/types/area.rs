@@ -141,7 +141,7 @@ impl Area {
     async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
         info!(area_id = self.id, "Area.annotation resolver called");
         let loader = ctx.data::<DataLoader<AreaAnnotationLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(area_id = self.id, "Area.aliases resolver called");

@@ -160,7 +160,7 @@ impl Recording {
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(recording_id = self.id, "Recording.rating resolver called");
         let loader = ctx.data::<DataLoader<RecordingRatingLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
         info!(
@@ -200,7 +200,7 @@ impl Recording {
             "Recording.annotation resolver called"
         );
         let loader = ctx.data::<DataLoader<RecordingAnnotationLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(recording_id = self.id, "Recording.aliases resolver called");

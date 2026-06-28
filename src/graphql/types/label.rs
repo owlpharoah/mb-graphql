@@ -140,7 +140,7 @@ impl Label {
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(label_id = self.id, "Label.rating resolver called");
         let loader = ctx.data::<DataLoader<LabelRatingLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
         info!(label_id = self.id, "Label.genres resolver called");
@@ -163,7 +163,7 @@ impl Label {
     async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
         info!(label_id = self.id, "Label.annotation resolver called");
         let loader = ctx.data::<DataLoader<LabelAnnotationLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(label_id = self.id, "Label.area resolver called");
@@ -176,7 +176,7 @@ impl Label {
 
         let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
 
-        Ok(area_loader.load_one(area_id).await?)
+        area_loader.load_one(area_id).await
     }
     async fn ipis(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<String>> {
         info!(label_id = self.id, "Label.ipis resolver called");

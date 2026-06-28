@@ -259,7 +259,7 @@ impl Release {
     async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
         info!(release_id = self.id, "Release.annotation resolver called");
         let loader = ctx.data::<DataLoader<ReleaseAnnotationLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(release_id = self.id, "Release.aliases resolver called");

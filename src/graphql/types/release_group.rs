@@ -162,7 +162,7 @@ impl ReleaseGroup {
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(rg_id = self.id, "ReleaseGroup.rating resolver called");
         let loader = ctx.data::<DataLoader<ReleaseGroupRatingLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
         info!(
@@ -199,7 +199,7 @@ impl ReleaseGroup {
     async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
         info!(rg_id = self.id, "ReleaseGroup.annotation resolver called");
         let loader = ctx.data::<DataLoader<ReleaseGroupAnnotationLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(rg_id = self.id, "ReleaseGroup.aliases resolver called");

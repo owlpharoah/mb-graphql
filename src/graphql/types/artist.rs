@@ -203,7 +203,7 @@ impl Artist {
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(artist_id = self.id, "Artist.rating resolver called");
         let loader = ctx.data::<DataLoader<ArtistRatingLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
         info!(artist_id = self.id, "Artist.genres resolver called");
@@ -226,7 +226,7 @@ impl Artist {
     async fn annotation(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
         info!(artist_id = self.id, "Artist.annotation resolver called");
         let loader = ctx.data::<DataLoader<ArtistAnnotationLoader>>()?;
-        Ok(loader.load_one(self.id).await?)
+        loader.load_one(self.id).await
     }
     async fn area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(artist_id = self.id, "Artist.area resolver called");
@@ -239,7 +239,7 @@ impl Artist {
 
         let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
 
-        Ok(area_loader.load_one(area_id).await?)
+        area_loader.load_one(area_id).await
     }
     async fn begin_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(artist_id = self.id, "Artist.beginarea resolver called");
@@ -252,7 +252,7 @@ impl Artist {
 
         let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
 
-        Ok(area_loader.load_one(area_id).await?)
+        area_loader.load_one(area_id).await
     }
     async fn end_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(artist_id = self.id, "Artist.endarea resolver called");
@@ -265,7 +265,7 @@ impl Artist {
 
         let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
 
-        Ok(area_loader.load_one(area_id).await?)
+        area_loader.load_one(area_id).await
     }
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(artist_id = self.id, "Artist.aliases resolver called");

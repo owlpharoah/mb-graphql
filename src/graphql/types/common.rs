@@ -141,7 +141,7 @@ impl LabelInfo {
 
         let loader = ctx.data::<DataLoader<LabelLoader>>()?;
 
-        Ok(loader.load_one(label_id).await?)
+        loader.load_one(label_id).await
     }
 }
 
@@ -172,14 +172,14 @@ impl Medium {
 impl Track {
     async fn recording(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Recording>> {
         let recording_loader = ctx.data::<DataLoader<RecordingLoader>>()?;
-        Ok(recording_loader.load_one(self.recording_id).await?)
+        recording_loader.load_one(self.recording_id).await
     }
     async fn artist_credit(
         &self,
         ctx: &Context<'_>,
     ) -> async_graphql::Result<Option<Vec<ArtistCredit>>> {
         let artist_credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
-        Ok(artist_credit_loader.load_one(self.artist_credit).await?)
+        artist_credit_loader.load_one(self.artist_credit).await
     }
 }
 
@@ -187,6 +187,6 @@ impl Track {
 impl ArtistCredit {
     async fn artist(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Artist>> {
         let artist_loader = ctx.data::<DataLoader<ArtistLoader>>()?;
-        Ok(artist_loader.load_one(self.artist_id).await?)
+        artist_loader.load_one(self.artist_id).await
     }
 }
