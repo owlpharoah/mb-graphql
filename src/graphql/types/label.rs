@@ -23,7 +23,6 @@ use crate::graphql::{
 };
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 use tracing::info;
 use types::common::PartialDate;
 use uuid::Uuid;

@@ -100,18 +100,12 @@ type PartialDate {
 }
 
 type QueryRoot {
-	artist(mbid: String!): Artist
-	artists(mbids: [String!]!): [Artist!]!
-	releaseGroup(mbid: String!): ReleaseGroup
-	releaseGroups(mbids: [String!]!): [ReleaseGroup!]!
-	release(mbid: String!): Release
-	releases(mbids: [String!]!): [Release!]!
-	recording(mbid: String!): Recording
-	recordings(mbids: [String!]!): [Recording!]!
-	label(mbid: String!): Label
-	labels(mbids: [String!]!): [Label!]!
-	area(mbid: String!): Area
-	areas(mbids: [String!]!): [Area!]!
+	artist(mbid: [String!]!): [Artist!]!
+	releaseGroup(mbid: [String!]!): [ReleaseGroup!]!
+	release(mbid: [String!]!): [Release!]!
+	recording(mbid: [String!]!): [Recording!]!
+	label(mbid: [String!]!): [Label!]!
+	area(mbid: [String!]!): [Area!]!
 }
 
 type Rating {

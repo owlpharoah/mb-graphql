@@ -1,6 +1,5 @@
 use async_graphql::{ComplexObject, Context, Object, SimpleObject, dataloader::DataLoader};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 use tracing::info;
 use uuid::Uuid;
 
