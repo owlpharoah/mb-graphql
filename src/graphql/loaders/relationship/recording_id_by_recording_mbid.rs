@@ -26,10 +26,11 @@ impl Loader<Uuid> for RecordingIDByMBIDLoader {
             count = recording_mbids.len(),
             "RecordingIDByMBIDLoader batch load"
         );
-        let rows = sqlx::query_as::<_, RecordingIDMBIDRow>(
+        let rows = sqlx::query_as!(
+            RecordingIDMBIDRow,
             "SELECT gid, id FROM recording WHERE gid = ANY($1)",
+            recording_mbids
         )
-        .bind(recording_mbids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

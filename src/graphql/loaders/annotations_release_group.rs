@@ -26,13 +26,14 @@ impl Loader<i32> for ReleaseGroupAnnotationLoader {
             "ReleaseGroupAnnotationLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, ReleaseGroupAnnotationRow>(
+        let rows = sqlx::query_as!(
+            ReleaseGroupAnnotationRow,
             r#"SELECT rga.release_group AS release_group, a.text AS text
             FROM release_group_annotation rga
             JOIN annotation a ON a.id = rga.annotation
             WHERE rga.release_group = ANY($1)"#,
+            release_group_ids
         )
-        .bind(release_group_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

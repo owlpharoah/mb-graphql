@@ -21,10 +21,11 @@ impl Loader<i32> for ReleaseIdByReleaseGroupLoader {
             count = rg_ids.len(),
             "ReleaseIdByReleaseGroupLoader batch load"
         );
-        let rows = sqlx::query_as::<_, ReleaseGroupReleaseIdRow>(
+        let rows = sqlx::query_as!(
+            ReleaseGroupReleaseIdRow,
             "SELECT id , release_group FROM release WHERE release_group = ANY($1)",
+            rg_ids
         )
-        .bind(rg_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

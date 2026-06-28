@@ -20,10 +20,11 @@ impl Loader<i32> for LabelIsniLoader {
     async fn load(&self, label_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = label_ids.len(), "LabelIsniLoader batch load");
 
-        let rows = sqlx::query_as::<_, LabelIsniRow>(
+        let rows = sqlx::query_as!(
+            LabelIsniRow,
             "SELECT label, isni FROM label_isni WHERE label = ANY($1)",
+            label_ids
         )
-        .bind(label_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

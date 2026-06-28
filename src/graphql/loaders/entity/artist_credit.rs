@@ -24,7 +24,8 @@ impl Loader<i32> for ArtistCreditLoader {
     async fn load(&self, credit_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = credit_ids.len(), "ArtistCreditLoader batch load");
 
-        let rows = sqlx::query_as::<_, ArtistCreditNameRow>(
+        let rows = sqlx::query_as!(
+            ArtistCreditNameRow,
             r#"SELECT
                 artist_credit,
                 artist,
@@ -33,8 +34,8 @@ impl Loader<i32> for ArtistCreditLoader {
             FROM artist_credit_name
             WHERE artist_credit = ANY($1)
             ORDER BY artist_credit, position"#,
+            credit_ids
         )
-        .bind(credit_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

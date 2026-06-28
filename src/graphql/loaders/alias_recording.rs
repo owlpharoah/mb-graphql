@@ -36,7 +36,8 @@ impl Loader<i32> for RecordingAliasLoader {
             "RecordingAliasLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, RecordingAliasRow>(
+        let rows = sqlx::query_as!(
+            RecordingAliasRow,
             r#"SELECT
                 rca.recording,
                 rca.name,
@@ -54,8 +55,8 @@ impl Loader<i32> for RecordingAliasLoader {
             FROM recording_alias rca
             LEFT JOIN recording_alias_type at ON at.id = rca."type"
             WHERE rca.recording = ANY($1)"#,
+            recording_ids
         )
-        .bind(recording_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

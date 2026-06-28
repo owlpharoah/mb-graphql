@@ -28,7 +28,8 @@ impl Loader<i32> for TrackLoader {
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "TrackLoader batch load");
-        let rows = sqlx::query_as::<_, TrackRow>(
+        let rows = sqlx::query_as!(
+            TrackRow,
             r#"SELECT
             id,
             gid,
@@ -41,8 +42,8 @@ impl Loader<i32> for TrackLoader {
             name
             FROM track
             WHERE id = ANY($1)"#,
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

@@ -26,15 +26,16 @@ impl Loader<i32> for GenreIdsByReleaseGroupLoader {
             "GenreIdsByReleaseGroupLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, ReleaseGroupGenreIdRow>(
+        let rows = sqlx::query_as!(
+            ReleaseGroupGenreIdRow,
             r#"SELECT rgt.release_group AS release_group, g.id AS id
             FROM release_group_tag rgt
             JOIN tag t ON t.id = rgt.tag
             JOIN genre g ON g.name = t.name
             WHERE rgt.release_group = ANY($1)
             ORDER BY rgt.release_group, rgt.count DESC"#,
+            release_group_ids
         )
-        .bind(release_group_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

@@ -21,14 +21,17 @@ impl Loader<i32> for ReleaseIdsByLabelLoader {
             count = label_ids.len(),
             "ReleaseIdsByLabelLoader batch load"
         );
-        let rows = sqlx::query_as::<_, LabelReleaseIdRow>(
-            "SELECT DISTINCT
-                label,
-                release
+        let rows = sqlx::query_as!(
+            LabelReleaseIdRow,
+            r#"
+                SELECT DISTINCT
+                    label AS "label!",
+                    release
                 FROM release_label
-            WHERE label = ANY($1);",
+                WHERE label = ANY($1)
+                "#,
+            label_ids
         )
-        .bind(label_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

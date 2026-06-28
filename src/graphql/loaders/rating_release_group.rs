@@ -23,10 +23,11 @@ impl Loader<i32> for ReleaseGroupRatingLoader {
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "ReleaseGroupRatingLoader batch load");
 
-        let rows = sqlx::query_as::<_, ReleaseGroupRatingRow>(
+        let rows = sqlx::query_as!(
+            ReleaseGroupRatingRow,
             "SELECT id, rating, rating_count FROM release_group_meta WHERE id = ANY($1)",
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

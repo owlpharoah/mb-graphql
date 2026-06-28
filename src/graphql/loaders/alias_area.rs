@@ -33,9 +33,10 @@ impl Loader<i32> for AreaAliasLoader {
     async fn load(&self, area_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = area_ids.len(), "AreaAliasLoader batch load");
 
-        let rows = sqlx::query_as::<_, AreaAliasRow>(
+        let rows = sqlx::query_as!(
+            AreaAliasRow,
             r#"SELECT
-                    aa.area`,
+                    aa.area,
                     aa.name,
                     aa.sort_name,
                     at.name AS type_name,
@@ -51,8 +52,8 @@ impl Loader<i32> for AreaAliasLoader {
                 FROM area_alias aa
                 LEFT JOIN area_alias_type at ON at.id = aa."type"
                 WHERE aa.area = ANY($1)"#,
+            area_ids
         )
-        .bind(area_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

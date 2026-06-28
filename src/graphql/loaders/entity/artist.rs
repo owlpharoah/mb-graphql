@@ -17,10 +17,11 @@ impl Loader<i32> for ArtistLoader {
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "ArtistLoader batch load");
-        let rows = sqlx::query_as::<_, ArtistRow>(
-            r#"SELECT id, gid, name, sort_name, comment,type, gender, area, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day,begin_area,end_area FROM artist WHERE id = ANY($1)"#,
+        let rows = sqlx::query_as!(
+            ArtistRow,
+            r#"SELECT id, gid, name, sort_name, comment,type AS artist_type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day FROM artist WHERE id = ANY($1)"#,
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

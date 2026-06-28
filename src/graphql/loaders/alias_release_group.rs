@@ -39,7 +39,8 @@ impl Loader<i32> for ReleaseGroupAliasLoader {
             "ReleaseGroupAliasLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, ReleaseGroupAliasRow>(
+        let rows = sqlx::query_as!(
+            ReleaseGroupAliasRow,
             r#"SELECT
                 rga.release_group,
                 rga.name,
@@ -57,8 +58,8 @@ impl Loader<i32> for ReleaseGroupAliasLoader {
             FROM release_group_alias rga
             LEFT JOIN release_group_alias_type at ON at.id = rga.type
             WHERE rga.release_group = ANY($1)"#,
+            release_group_ids
         )
-        .bind(release_group_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

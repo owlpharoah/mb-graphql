@@ -23,13 +23,14 @@ impl Loader<i32> for RecordingAnnotationLoader {
             "RecordingAnnotationLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, RecordingAnnotationRow>(
+        let rows = sqlx::query_as!(
+            RecordingAnnotationRow,
             r#"SELECT rca.recording AS recording, a.text AS text
             FROM recording_annotation rca
             JOIN annotation a ON a.id = rca.annotation
             WHERE rca.recording = ANY($1)"#,
+            recording_ids
         )
-        .bind(recording_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

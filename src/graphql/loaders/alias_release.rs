@@ -33,7 +33,8 @@ impl Loader<i32> for ReleaseAliasLoader {
     async fn load(&self, release_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = release_ids.len(), "ReleaseAliasLoader batch load");
 
-        let rows = sqlx::query_as::<_, ReleaseAliasRow>(
+        let rows = sqlx::query_as!(
+            ReleaseAliasRow,
             r#"SELECT
                 ra.release,
                 ra.name,
@@ -51,8 +52,8 @@ impl Loader<i32> for ReleaseAliasLoader {
             FROM release_alias ra
             LEFT JOIN release_alias_type at ON at.id = ra."type"
             WHERE ra.release = ANY($1)"#,
+            release_ids
         )
-        .bind(release_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

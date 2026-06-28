@@ -23,13 +23,14 @@ impl Loader<i32> for ArtistAnnotationLoader {
             "ArtistAnnotationLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, ArtistAnnotationRow>(
+        let rows = sqlx::query_as!(
+            ArtistAnnotationRow,
             r#"SELECT aa.artist AS artist, a.text AS text
             FROM artist_annotation aa
             JOIN annotation a ON a.id = aa.annotation
             WHERE aa.artist = ANY($1)"#,
+            artist_ids
         )
-        .bind(artist_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

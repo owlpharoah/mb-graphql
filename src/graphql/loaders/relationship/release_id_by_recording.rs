@@ -22,15 +22,16 @@ impl Loader<i32> for ReleaseIdsByRecordingLoader {
             count = recording_ids.len(),
             "ReleaseIdsByRecordingLoader batch load"
         );
-        let rows = sqlx::query_as::<_, RecordingReleaseIdRow>(
+        let rows = sqlx::query_as!(
+            RecordingReleaseIdRow,
             "SELECT DISTINCT
                 t.recording,
                 m.release
             FROM track t
             JOIN medium m ON m.id = t.medium
             WHERE t.recording = ANY($1);",
+            recording_ids
         )
-        .bind(recording_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

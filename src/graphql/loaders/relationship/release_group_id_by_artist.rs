@@ -22,10 +22,11 @@ impl Loader<i32> for ReleaseGroupIdsByArtistLoader {
             count = artist_ids.len(),
             "ReleaseGroupIdsByArtistLoader batch load"
         );
-        let rows = sqlx::query_as::<_, ArtistReleaseGroupIdRow>(
+        let rows = sqlx::query_as!(
+            ArtistReleaseGroupIdRow,
             "SELECT artist, release_group FROM artist_release_group WHERE artist = ANY($1)",
+            artist_ids
         )
-        .bind(artist_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

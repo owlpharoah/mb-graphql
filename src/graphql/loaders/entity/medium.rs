@@ -25,7 +25,8 @@ impl Loader<i32> for MediumLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
-        let rows = sqlx::query_as::<_, MediumRow>(
+        let rows = sqlx::query_as!(
+            MediumRow,
             r#"SELECT
                 id,
                 gid,
@@ -36,8 +37,8 @@ impl Loader<i32> for MediumLoader {
                 track_count
             FROM medium
             WHERE id = ANY($1)"#,
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

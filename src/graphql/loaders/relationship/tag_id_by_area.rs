@@ -23,10 +23,11 @@ impl Loader<i32> for TagIdsByAreaLoader {
     async fn load(&self, area_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = area_ids.len(), "TagIdsByAreaLoader batch load");
 
-        let rows = sqlx::query_as::<_, AreaTagRow>(
+        let rows = sqlx::query_as!(
+            AreaTagRow,
             "SELECT area, tag, count FROM area_tag WHERE area = ANY($1)",
+            area_ids
         )
-        .bind(area_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

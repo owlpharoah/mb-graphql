@@ -14,7 +14,8 @@ impl Loader<i32> for ReleaseLoader {
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "ReleaseLoader batch load");
-        let rows = sqlx::query_as::<_, ReleaseRow>(
+        let rows = sqlx::query_as!(
+            ReleaseRow,
             r#"SELECT
                 id,
                 gid,
@@ -28,8 +29,8 @@ impl Loader<i32> for ReleaseLoader {
                 barcode,
                 comment
             FROM release WHERE id = ANY($1)"#,
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

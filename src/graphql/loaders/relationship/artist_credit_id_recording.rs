@@ -23,10 +23,11 @@ impl Loader<i32> for ArtistCreditIdByRecordingLoader {
             "ArtistCreditIdByRecordingLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, RecordingArtistCreditRow>(
+        let rows = sqlx::query_as!(
+            RecordingArtistCreditRow,
             "SELECT id, artist_credit FROM recording WHERE id = ANY($1)",
+            recording_ids
         )
-        .bind(recording_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

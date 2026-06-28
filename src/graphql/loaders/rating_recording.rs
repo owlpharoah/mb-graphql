@@ -23,10 +23,11 @@ impl Loader<i32> for RecordingRatingLoader {
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "RecordingRatingLoader batch load");
 
-        let rows = sqlx::query_as::<_, RecordingRatingRow>(
+        let rows = sqlx::query_as!(
+            RecordingRatingRow,
             "SELECT id, rating, rating_count FROM recording_meta WHERE id = ANY($1)",
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

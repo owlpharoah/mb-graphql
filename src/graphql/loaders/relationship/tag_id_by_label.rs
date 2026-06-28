@@ -23,10 +23,11 @@ impl Loader<i32> for TagIdsByLabelLoader {
     async fn load(&self, label_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = label_ids.len(), "TagIdsByLabelLoader batch load");
 
-        let rows = sqlx::query_as::<_, LabelTagRow>(
+        let rows = sqlx::query_as!(
+            LabelTagRow,
             "SELECT label, tag, count FROM label_tag WHERE label = ANY($1)",
+            label_ids
         )
-        .bind(label_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

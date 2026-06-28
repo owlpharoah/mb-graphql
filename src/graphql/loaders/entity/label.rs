@@ -16,7 +16,8 @@ impl Loader<i32> for LabelLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
-        let rows = sqlx::query_as::<_, LabelRow>(
+        let rows = sqlx::query_as!(
+            LabelRow,
             r#"SELECT
                 id,
                 gid,
@@ -27,14 +28,14 @@ impl Loader<i32> for LabelLoader {
                 end_date_year,
                 end_date_month,
                 end_date_day,
-                type,
+                type AS label_type,
                 comment,
                 ended,
                 label_code
             FROM label
             WHERE id = ANY($1)"#,
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

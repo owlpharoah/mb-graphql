@@ -20,10 +20,12 @@ impl Loader<Uuid> for LabelIDByMBIDLoader {
 
     async fn load(&self, label_mbids: &[Uuid]) -> Result<HashMap<Uuid, Self::Value>, Self::Error> {
         info!(count = label_mbids.len(), "LabelIDByMBIDLoader batch load");
-        let rows =
-            sqlx::query_as::<_, LabelIDMBIDRow>("SELECT gid, id FROM label WHERE gid = ANY($1)")
-                .bind(label_mbids)
-                .fetch_all(&self.pool)
+        let rows = sqlx::query_as!(
+            LabelIDMBIDRow,
+            "SELECT gid, id FROM label WHERE gid = ANY($1)",
+            label_mbids
+        )
+        .fetch_all(&self.pool)
                 .await
                 .map_err(|e| async_graphql::Error::new(e.to_string()))?;
         info!(rows = rows.len(), "LabelIDByMBIDLoader query returned");

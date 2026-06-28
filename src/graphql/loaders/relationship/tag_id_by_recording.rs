@@ -26,10 +26,11 @@ impl Loader<i32> for TagIdsByRecordingLoader {
             "TagIdsByRecordingLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, RecordingTagRow>(
+        let rows = sqlx::query_as!(
+            RecordingTagRow,
             "SELECT recording, tag, count FROM recording_tag WHERE recording = ANY($1)",
+            recording_ids
         )
-        .bind(recording_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

@@ -22,10 +22,12 @@ impl Loader<Uuid> for ArtistIDByMBIDLoader {
             count = artist_mbids.len(),
             "ArtistIDByMBIDLoader batch load"
         );
-        let rows =
-            sqlx::query_as::<_, ArtistIDMBIDRow>("SELECT gid , id FROM artist WHERE gid = ANY($1)")
-                .bind(artist_mbids)
-                .fetch_all(&self.pool)
+        let rows = sqlx::query_as!(
+            ArtistIDMBIDRow,
+            "SELECT gid , id FROM artist WHERE gid = ANY($1)",
+            artist_mbids
+        )
+        .fetch_all(&self.pool)
                 .await
                 .map_err(|e| async_graphql::Error::new(e.to_string()))?;
         info!(rows = rows.len(), "ArtistIDByMBIDLoader query returned");

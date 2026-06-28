@@ -18,13 +18,14 @@ impl Loader<i32> for AreaLoader {
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "AreaLoader batch load");
 
-        let rows = sqlx::query_as::<_, AreaRow>(
+        let rows = sqlx::query_as!(
+            AreaRow,
             r#"SELECT
                 id,
                 gid,
                 name,
                 comment,
-                type,
+                type AS area_type,
                 ended,
                 begin_date_year,
                 begin_date_month,
@@ -34,8 +35,8 @@ impl Loader<i32> for AreaLoader {
                 end_date_day
             FROM area
             WHERE id = ANY($1);"#,
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

@@ -26,10 +26,11 @@ impl Loader<i32> for TagIdsByReleaseLoader {
             "TagIdsByReleaseLoader batch load"
         );
 
-        let rows = sqlx::query_as::<_, ReleaseTagRow>(
+        let rows = sqlx::query_as!(
+            ReleaseTagRow,
             "SELECT release, tag, count FROM release_tag WHERE release = ANY($1)",
+            release_ids
         )
-        .bind(release_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

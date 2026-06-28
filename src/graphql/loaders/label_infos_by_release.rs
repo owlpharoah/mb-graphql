@@ -24,10 +24,11 @@ impl Loader<i32> for LabelInfosByReleaseLoader {
             count = release_ids.len(),
             "LabelInfosByReleaseLoader batch load"
         );
-        let rows = sqlx::query_as::<_, ReleaseLabelInfoRow>(
+        let rows = sqlx::query_as!(
+            ReleaseLabelInfoRow,
             "SELECT release, label , catalog_number FROM release_label WHERE release = ANY($1)",
+            release_ids
         )
-        .bind(release_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

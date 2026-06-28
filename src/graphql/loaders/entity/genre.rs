@@ -25,10 +25,11 @@ impl Loader<i32> for GenreLoader {
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "GenreLoader batch load");
 
-        let rows = sqlx::query_as::<_, GenreRow>(
+        let rows = sqlx::query_as!(
+            GenreRow,
             "SELECT id, gid, name, comment FROM genre WHERE id = ANY($1)",
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

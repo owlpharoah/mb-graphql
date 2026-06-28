@@ -26,10 +26,11 @@ impl Loader<Uuid> for ReleaseIDByMBIDLoader {
             count = release_mbids.len(),
             "ReleaseIDByMBIDLoader batch load"
         );
-        let rows = sqlx::query_as::<_, ReleaseIDMBIDRow>(
+        let rows = sqlx::query_as!(
+            ReleaseIDMBIDRow,
             "SELECT gid, id FROM release WHERE gid = ANY($1)",
+            release_mbids
         )
-        .bind(release_mbids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

@@ -33,7 +33,8 @@ impl Loader<i32> for LabelAliasLoader {
     async fn load(&self, label_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = label_ids.len(), "LabelAliasLoader batch load");
 
-        let rows = sqlx::query_as::<_, LabelAliasRow>(
+        let rows = sqlx::query_as!(
+            LabelAliasRow,
             r#"SELECT
                 la.label,
                 la.name,
@@ -51,8 +52,8 @@ impl Loader<i32> for LabelAliasLoader {
             FROM label_alias la
             LEFT JOIN label_alias_type at ON at.id = la."type"
             WHERE la.label = ANY($1)"#,
+            label_ids
         )
-        .bind(label_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

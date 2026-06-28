@@ -101,8 +101,8 @@ impl Recording {
 
         let row: Option<(Option<i16>, Option<i16>, Option<i16>)> = sqlx::query_as(
             "SELECT year,month,day
-            FROM recording_first_release_date
-            WHERE recording = $1",
+                   FROM recording_first_release_date
+                   WHERE recording = $1",
         )
         .bind(self.id)
         .fetch_optional(pool)

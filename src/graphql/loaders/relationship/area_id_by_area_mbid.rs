@@ -20,10 +20,12 @@ impl Loader<Uuid> for AreaIDByMBIDLoader {
 
     async fn load(&self, area_mbids: &[Uuid]) -> Result<HashMap<Uuid, Self::Value>, Self::Error> {
         info!(count = area_mbids.len(), "AreaIDByMBIDLoader batch load");
-        let rows =
-            sqlx::query_as::<_, AreaIDMBIDRow>("SELECT gid, id FROM area WHERE gid = ANY($1)")
-                .bind(area_mbids)
-                .fetch_all(&self.pool)
+        let rows = sqlx::query_as!(
+            AreaIDMBIDRow,
+            "SELECT gid, id FROM area WHERE gid = ANY($1)",
+            area_mbids
+        )
+        .fetch_all(&self.pool)
                 .await
                 .map_err(|e| async_graphql::Error::new(e.to_string()))?;
         info!(rows = rows.len(), "AreaIDByMBIDLoader query returned");

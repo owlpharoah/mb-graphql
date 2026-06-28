@@ -18,10 +18,11 @@ impl Loader<i32> for TrackIdByMediumLoader {
 
     async fn load(&self, m_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = m_ids.len(), "TrackIdByMediumLoader batch load");
-        let rows = sqlx::query_as::<_, MediumTrackIdRow>(
+        let rows = sqlx::query_as!(
+            MediumTrackIdRow,
             "SELECT id , medium FROM track WHERE medium = ANY($1)",
+            m_ids
         )
-        .bind(m_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

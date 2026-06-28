@@ -20,13 +20,14 @@ impl Loader<i32> for AreaAnnotationLoader {
     async fn load(&self, area_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = area_ids.len(), "AreaAnnotationLoader batch load");
 
-        let rows = sqlx::query_as::<_, AreaAnnotationRow>(
+        let rows = sqlx::query_as!(
+            AreaAnnotationRow,
             r#"SELECT aa.area AS area, a.text AS text
             FROM area_annotation aa
             JOIN annotation a ON a.id = aa.annotation
             WHERE aa.area = ANY($1)"#,
+            area_ids
         )
-        .bind(area_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

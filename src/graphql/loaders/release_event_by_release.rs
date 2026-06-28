@@ -26,10 +26,20 @@ impl Loader<i32> for ReleaseEventsByReleaseLoader {
             count = release_ids.len(),
             "ReleaseEventsByReleaseLoader batch load"
         );
-        let rows = sqlx::query_as::<_, ReleaseReleaseEventRow>(
-            "SELECT release, date_year, date_month, date_day,country FROM release_event WHERE release = ANY($1)",
+        let rows = sqlx::query_as!(
+            ReleaseReleaseEventRow,
+            r#"
+                SELECT
+                    release AS "release!",
+                    date_year,
+                    date_month,
+                    date_day,
+                    country
+                FROM release_event
+                WHERE release = ANY($1)
+                "#,
+            release_ids
         )
-        .bind(release_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

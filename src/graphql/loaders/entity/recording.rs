@@ -14,7 +14,8 @@ impl Loader<i32> for RecordingLoader {
 
     async fn load(&self, ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = ids.len(), "RecordingLoader batch load");
-        let rows = sqlx::query_as::<_, RecordingRow>(
+        let rows = sqlx::query_as!(
+            RecordingRow,
             r#"SELECT
                 id,
                 gid,
@@ -24,8 +25,8 @@ impl Loader<i32> for RecordingLoader {
                 video
             FROM recording
             WHERE id = ANY($1)"#,
+            ids
         )
-        .bind(ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;

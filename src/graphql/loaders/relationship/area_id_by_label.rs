@@ -20,10 +20,12 @@ impl Loader<i32> for AreaIdByLabelLoader {
     async fn load(&self, label_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = label_ids.len(), "AreaIdByLabelLoader batch load");
 
-        let rows =
-            sqlx::query_as::<_, LabelAreaRow>("SELECT id, area FROM label WHERE id = ANY($1)")
-                .bind(label_ids)
-                .fetch_all(&self.pool)
+        let rows = sqlx::query_as!(
+            LabelAreaRow,
+            "SELECT id, area FROM label WHERE id = ANY($1)",
+            label_ids
+        )
+        .fetch_all(&self.pool)
                 .await
                 .map_err(|e| async_graphql::Error::new(e.to_string()))?;
 

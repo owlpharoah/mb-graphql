@@ -18,13 +18,14 @@ impl Loader<i32> for IsoCode3ByAreaLoader {
 
     async fn load(&self, area_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         info!(count = area_ids.len(), "IsoCode3ByAreaLoader batch load");
-        let rows = sqlx::query_as::<_, AreaISOCodeRow>(
+        let rows = sqlx::query_as!(
+            AreaISOCodeRow,
             "SELECT
                 area,code
             FROM iso_3166_3
             WHERE area = ANY($1)",
+            area_ids
         )
-        .bind(area_ids)
         .fetch_all(&self.pool)
         .await
         .map_err(|e| async_graphql::Error::new(e.to_string()))?;
