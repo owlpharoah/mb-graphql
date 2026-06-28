@@ -26,8 +26,8 @@ impl Loader<i32> for AreaIdByLabelLoader {
             label_ids
         )
         .fetch_all(&self.pool)
-                .await
-                .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        .await
+        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
 
         info!(rows = rows.len(), "AreaIdByLabelLoader query returned");
 

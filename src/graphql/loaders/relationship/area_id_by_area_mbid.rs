@@ -26,8 +26,8 @@ impl Loader<Uuid> for AreaIDByMBIDLoader {
             area_mbids
         )
         .fetch_all(&self.pool)
-                .await
-                .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        .await
+        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
         info!(rows = rows.len(), "AreaIDByMBIDLoader query returned");
         let mut result: HashMap<Uuid, i32> = HashMap::new();
         for row in rows {
