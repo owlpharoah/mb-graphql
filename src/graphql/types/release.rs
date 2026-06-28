@@ -3,10 +3,12 @@ use crate::graphql::loaders::annotations_release::ReleaseAnnotationLoader;
 use crate::graphql::loaders::entity::artist_credit::ArtistCreditLoader;
 use crate::graphql::loaders::entity::genre::GenreLoader;
 use crate::graphql::loaders::entity::medium::MediumLoader;
+use crate::graphql::loaders::entity::release::ReleaseLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
 use crate::graphql::loaders::relationship::genre_id_by_release::GenreIdsByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
+use crate::graphql::loaders::relationship::release_id_by_realease_mbid::ReleaseIDByMBIDLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
 use crate::graphql::types::common::{Alias, ArtistCredit, Genre, Medium, ReleaseEvent};
 use crate::graphql::types::{
@@ -80,67 +82,24 @@ impl ReleaseQuery {
     async fn release(
         &self,
         ctx: &Context<'_>,
-        mbid: String,
-    ) -> async_graphql::Result<Option<Release>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuid = Uuid::parse_str(&mbid)?;
-
-        let row = sqlx::query_as::<_, ReleaseRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                release_group,
-                status,
-                packaging,
-                quality,
-                language,
-                script,
-                barcode,
-                comment
-            FROM release
-            WHERE gid = $1",
-        )
-        .bind(uuid)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(row.map(Release::from))
-    }
-
-    async fn releases(
-        &self,
-        ctx: &Context<'_>,
-        mbids: Vec<String>,
+        mbid: Vec<String>,
     ) -> async_graphql::Result<Vec<Release>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuids: Vec<Uuid> = mbids
+        let uuids: Vec<Uuid> = mbid
             .iter()
             .map(|s| Uuid::parse_str(s))
             .collect::<Result<_, _>>()?;
-
-        let rows = sqlx::query_as::<_, ReleaseRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                release_group,
-                status,
-                packaging,
-                quality,
-                language,
-                script,
-                barcode,
-                comment
-            FROM release
-            WHERE gid = ANY($1)",
-        )
-        .bind(&uuids)
-        .fetch_all(pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
-        Ok(rows.into_iter().map(Release::from).collect())
+        let id_loader = ctx.data::<DataLoader<ReleaseIDByMBIDLoader>>()?;
+        let ids = id_loader.load_many(uuids).await?;
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+        let release_loader = ctx.data::<DataLoader<ReleaseLoader>>()?;
+        let release_ids: Vec<i32> = ids.values().copied().collect();
+        let releases_map = release_loader.load_many(release_ids).await?;
+        Ok(ids
+            .into_iter()
+            .filter_map(|(_uuid, id)| releases_map.get(&id).cloned())
+            .collect())
     }
 }
 

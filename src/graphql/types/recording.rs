@@ -2,11 +2,15 @@ use crate::graphql::{
     loaders::{
         alias_recording::RecordingAliasLoader,
         annotations_recording::RecordingAnnotationLoader,
-        entity::{artist_credit::ArtistCreditLoader, genre::GenreLoader, release::ReleaseLoader},
+        entity::{
+            artist_credit::ArtistCreditLoader, genre::GenreLoader, recording::RecordingLoader,
+            release::ReleaseLoader,
+        },
         rating_recording::RecordingRatingLoader,
         relationship::{
             artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader,
             genre_id_by_recording::GenreIdsByRecordingLoader,
+            recording_id_by_recording_mbid::RecordingIDByMBIDLoader,
             release_id_by_recording::ReleaseIdsByRecordingLoader,
         },
     },
@@ -66,57 +70,24 @@ impl RecordingQuery {
     async fn recording(
         &self,
         ctx: &Context<'_>,
-        mbid: String,
-    ) -> async_graphql::Result<Option<Recording>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuid = Uuid::parse_str(&mbid)?;
-
-        let row = sqlx::query_as::<_, RecordingRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                comment,
-                length,
-                video
-            FROM recording
-            WHERE gid = $1",
-        )
-        .bind(uuid)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(row.map(Recording::from))
-    }
-
-    async fn recordings(
-        &self,
-        ctx: &Context<'_>,
-        mbids: Vec<String>,
+        mbid: Vec<String>,
     ) -> async_graphql::Result<Vec<Recording>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuids: Vec<Uuid> = mbids
+        let uuids: Vec<Uuid> = mbid
             .iter()
             .map(|s| Uuid::parse_str(s))
             .collect::<Result<_, _>>()?;
-
-        let rows = sqlx::query_as::<_, RecordingRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                comment,
-                length,
-                video
-            FROM recording
-            WHERE gid = ANY($1)",
-        )
-        .bind(&uuids)
-        .fetch_all(pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
-        Ok(rows.into_iter().map(Recording::from).collect())
+        let id_loader = ctx.data::<DataLoader<RecordingIDByMBIDLoader>>()?;
+        let ids = id_loader.load_many(uuids).await?;
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+        let recording_loader = ctx.data::<DataLoader<RecordingLoader>>()?;
+        let recording_ids: Vec<i32> = ids.values().copied().collect();
+        let recordings_map = recording_loader.load_many(recording_ids).await?;
+        Ok(ids
+            .into_iter()
+            .filter_map(|(_uuid, id)| recordings_map.get(&id).cloned())
+            .collect())
     }
 }
 

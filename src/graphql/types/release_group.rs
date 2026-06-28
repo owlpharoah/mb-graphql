@@ -8,12 +8,16 @@ use crate::graphql::{
     loaders::{
         alias_release_group::ReleaseGroupAliasLoader,
         annotations_release_group::ReleaseGroupAnnotationLoader,
-        entity::{artist_credit::ArtistCreditLoader, genre::GenreLoader, release::ReleaseLoader},
+        entity::{
+            artist_credit::ArtistCreditLoader, genre::GenreLoader, release::ReleaseLoader,
+            release_group::ReleaseGroupLoader,
+        },
         rating_release_group::ReleaseGroupRatingLoader,
         relationship::{
             artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader,
             genre_id_by_release_group::GenreIdsByReleaseGroupLoader,
             release_id_by_release_group::ReleaseIdByReleaseGroupLoader,
+            rg_id_by_rg_mbid::ReleaseGroupIDByMBIDLoader,
         },
     },
     types::{
@@ -66,45 +70,24 @@ impl ReleaseGroupQuery {
     async fn release_group(
         &self,
         ctx: &Context<'_>,
-        mbid: String,
-    ) -> async_graphql::Result<Option<ReleaseGroup>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuid = Uuid::parse_str(&mbid)?;
-
-        let row = sqlx::query_as::<_, ReleaseGroupRow>(
-            "SELECT id, gid, name,comment,type
-                        FROM release_group
-                        WHERE gid = $1",
-        )
-        .bind(uuid)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(row.map(ReleaseGroup::from))
-    }
-
-    async fn release_groups(
-        &self,
-        ctx: &Context<'_>,
-        mbids: Vec<String>,
+        mbid: Vec<String>,
     ) -> async_graphql::Result<Vec<ReleaseGroup>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuids: Vec<Uuid> = mbids
+        let uuids: Vec<Uuid> = mbid
             .iter()
             .map(|s| Uuid::parse_str(s))
             .collect::<Result<_, _>>()?;
-
-        let rows = sqlx::query_as::<_, ReleaseGroupRow>(
-            "SELECT id, gid, name,comment,type
-                        FROM release_group
-                        WHERE gid = ANY($1)",
-        )
-        .bind(&uuids)
-        .fetch_all(pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
-        Ok(rows.into_iter().map(ReleaseGroup::from).collect())
+        let id_loader = ctx.data::<DataLoader<ReleaseGroupIDByMBIDLoader>>()?;
+        let ids = id_loader.load_many(uuids).await?;
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+        let release_group_loader = ctx.data::<DataLoader<ReleaseGroupLoader>>()?;
+        let release_group_ids: Vec<i32> = ids.values().copied().collect();
+        let release_groups_map = release_group_loader.load_many(release_group_ids).await?;
+        Ok(ids
+            .into_iter()
+            .filter_map(|(_uuid, id)| release_groups_map.get(&id).cloned())
+            .collect())
     }
 }
 

@@ -35,6 +35,7 @@ use crate::graphql::loaders::rating_artist::ArtistRatingLoader;
 use crate::graphql::loaders::rating_label::LabelRatingLoader;
 use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
 use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
+use crate::graphql::loaders::relationship::area_id_by_area_mbid::AreaIDByMBIDLoader;
 use crate::graphql::loaders::relationship::area_id_by_artist::{
     AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
 };
@@ -42,17 +43,22 @@ use crate::graphql::loaders::relationship::area_id_by_label::AreaIdByLabelLoader
 use crate::graphql::loaders::relationship::artist_credit_id_recording::ArtistCreditIdByRecordingLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
 use crate::graphql::loaders::relationship::artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader;
+use crate::graphql::loaders::relationship::artist_id_by_artist_mbid::ArtistIDByMBIDLoader;
 use crate::graphql::loaders::relationship::genre_id_by_artist::GenreIdsByArtistLoader;
 use crate::graphql::loaders::relationship::genre_id_by_label::GenreIdsByLabelLoader;
 use crate::graphql::loaders::relationship::genre_id_by_recording::GenreIdsByRecordingLoader;
 use crate::graphql::loaders::relationship::genre_id_by_release::GenreIdsByReleaseLoader;
 use crate::graphql::loaders::relationship::genre_id_by_release_group::GenreIdsByReleaseGroupLoader;
+use crate::graphql::loaders::relationship::label_id_by_label_mbid::LabelIDByMBIDLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
+use crate::graphql::loaders::relationship::recording_id_by_recording_mbid::RecordingIDByMBIDLoader;
 use crate::graphql::loaders::relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader;
 use crate::graphql::loaders::relationship::release_id_by_artist::ReleaseIdsByArtistLoader;
 use crate::graphql::loaders::relationship::release_id_by_label::ReleaseIdsByLabelLoader;
+use crate::graphql::loaders::relationship::release_id_by_realease_mbid::ReleaseIDByMBIDLoader;
 use crate::graphql::loaders::relationship::release_id_by_recording::ReleaseIdsByRecordingLoader;
 use crate::graphql::loaders::relationship::release_id_by_release_group::ReleaseIdByReleaseGroupLoader;
+use crate::graphql::loaders::relationship::rg_id_by_rg_mbid::ReleaseGroupIDByMBIDLoader;
 use crate::graphql::loaders::relationship::tag_id_by_area::TagIdsByAreaLoader;
 use crate::graphql::loaders::relationship::tag_id_by_artist::TagIdsByArtistLoader;
 use crate::graphql::loaders::relationship::tag_id_by_label::TagIdsByLabelLoader;
@@ -83,6 +89,21 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let artist_entity_loader = DataLoader::new(ArtistLoader { pool: pool.clone() }, tokio::spawn);
     let genre_entity_loader = DataLoader::new(GenreLoader { pool: pool.clone() }, tokio::spawn);
     let area_entity_loader = DataLoader::new(AreaLoader { pool: pool.clone() }, tokio::spawn);
+
+    let artist_mbid_id_loader =
+        DataLoader::new(ArtistIDByMBIDLoader { pool: pool.clone() }, tokio::spawn);
+    let rg_mbid_id_loader = DataLoader::new(
+        ReleaseGroupIDByMBIDLoader { pool: pool.clone() },
+        tokio::spawn,
+    );
+    let area_mbid_id_loader =
+        DataLoader::new(AreaIDByMBIDLoader { pool: pool.clone() }, tokio::spawn);
+    let label_mbid_id_loader =
+        DataLoader::new(LabelIDByMBIDLoader { pool: pool.clone() }, tokio::spawn);
+    let release_mbid_id_loader =
+        DataLoader::new(ReleaseIDByMBIDLoader { pool: pool.clone() }, tokio::spawn);
+    let recording_mbid_id_loader =
+        DataLoader::new(RecordingIDByMBIDLoader { pool: pool.clone() }, tokio::spawn);
 
     let rg_a_loader = DataLoader::new(
         ReleaseGroupIdsByArtistLoader { pool: pool.clone() },
@@ -275,6 +296,12 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(isni_label)
         .data(ipi_artist)
         .data(ipi_label)
+        .data(artist_mbid_id_loader)
+        .data(rg_mbid_id_loader)
+        .data(area_mbid_id_loader)
+        .data(label_mbid_id_loader)
+        .data(release_mbid_id_loader)
+        .data(recording_mbid_id_loader)
         .finish()
 }
 

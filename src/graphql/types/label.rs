@@ -2,12 +2,15 @@ use crate::graphql::{
     loaders::{
         alias_label::LabelAliasLoader,
         annotations_label::LabelAnnotationLoader,
-        entity::{area::AreaLoader, genre::GenreLoader, release::ReleaseLoader},
+        entity::{
+            area::AreaLoader, genre::GenreLoader, label::LabelLoader, release::ReleaseLoader,
+        },
         label_ipi::LabelIpiLoader,
         label_isni::LabelIsniLoader,
         rating_label::LabelRatingLoader,
         relationship::{
             area_id_by_label::AreaIdByLabelLoader, genre_id_by_label::GenreIdsByLabelLoader,
+            label_id_by_label_mbid::LabelIDByMBIDLoader,
             release_id_by_label::ReleaseIdsByLabelLoader,
         },
     },
@@ -84,71 +87,27 @@ pub struct LabelQuery;
 
 #[Object]
 impl LabelQuery {
-    async fn label(&self, ctx: &Context<'_>, mbid: String) -> async_graphql::Result<Option<Label>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuid = Uuid::parse_str(&mbid)?;
-
-        let row = sqlx::query_as::<_, LabelRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                begin_date_year,
-                begin_date_month,
-                begin_date_day,
-                end_date_year,
-                end_date_month,
-                end_date_day,
-                area,
-                type,
-                comment,
-                ended,
-                label_code
-            FROM label
-            WHERE gid = $1",
-        )
-        .bind(uuid)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(row.map(Label::from))
-    }
-
-    async fn labels(
+    async fn label(
         &self,
         ctx: &Context<'_>,
-        mbids: Vec<String>,
+        mbid: Vec<String>,
     ) -> async_graphql::Result<Vec<Label>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuids: Vec<Uuid> = mbids
+        let uuids: Vec<Uuid> = mbid
             .iter()
             .map(|s| Uuid::parse_str(s))
             .collect::<Result<_, _>>()?;
-
-        let rows = sqlx::query_as::<_, LabelRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                begin_date_year,
-                begin_date_month,
-                begin_date_day,
-                end_date_year,
-                end_date_month,
-                end_date_day,
-                type,
-                comment,
-                ended,
-                label_code
-            FROM label
-            WHERE gid = ANY($1)",
-        )
-        .bind(&uuids)
-        .fetch_all(pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
-        Ok(rows.into_iter().map(Label::from).collect())
+        let id_loader = ctx.data::<DataLoader<LabelIDByMBIDLoader>>()?;
+        let ids = id_loader.load_many(uuids).await?;
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+        let label_loader = ctx.data::<DataLoader<LabelLoader>>()?;
+        let label_ids: Vec<i32> = ids.values().copied().collect();
+        let labels_map = label_loader.load_many(label_ids).await?;
+        Ok(ids
+            .into_iter()
+            .filter_map(|(_uuid, id)| labels_map.get(&id).cloned())
+            .collect())
     }
 }
 

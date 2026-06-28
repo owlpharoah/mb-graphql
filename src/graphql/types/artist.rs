@@ -11,7 +11,7 @@ use crate::graphql::{
         artist_ipi::ArtistIpiLoader,
         artist_isni::ArtistIsniLoader,
         entity::{
-            area::AreaLoader, genre::GenreLoader, release::ReleaseLoader,
+            area::AreaLoader, artist::ArtistLoader, genre::GenreLoader, release::ReleaseLoader,
             release_group::ReleaseGroupLoader, tag::TagLoader,
         },
         rating_artist::ArtistRatingLoader,
@@ -19,6 +19,7 @@ use crate::graphql::{
             area_id_by_artist::{
                 AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
             },
+            artist_id_by_artist_mbid::ArtistIDByMBIDLoader,
             genre_id_by_artist::GenreIdsByArtistLoader,
             release_group_id_by_artist::ReleaseGroupIdsByArtistLoader,
             release_id_by_artist::ReleaseIdsByArtistLoader,
@@ -104,44 +105,28 @@ impl ArtistQuery {
     async fn artist(
         &self,
         ctx: &Context<'_>,
-        mbid: String,
-    ) -> async_graphql::Result<Option<Artist>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuid = Uuid::parse_str(&mbid)?;
-
-        let row = sqlx::query_as::<_, ArtistRow>(
-            "SELECT id, gid, name, sort_name, comment,type, gender, area, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day,begin_area,end_area
-                        FROM artist
-                        WHERE gid = $1",
-        )
-        .bind(uuid)
-        .fetch_optional(pool)
-        .await.map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
-        Ok(row.map(Artist::from))
-    }
-
-    async fn artists(
-        &self,
-        ctx: &Context<'_>,
-        mbids: Vec<String>,
+        mbid: Vec<String>,
     ) -> async_graphql::Result<Vec<Artist>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuids: Vec<Uuid> = mbids
+        let uuids: Vec<Uuid> = mbid
             .iter()
             .map(|s| Uuid::parse_str(s))
             .collect::<Result<_, _>>()?;
 
-        let rows = sqlx::query_as::<_, ArtistRow>(
-            "SELECT id, gid, name, sort_name, comment,type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day
-                        FROM artist
-                        WHERE gid = ANY($1)",
-        )
-        .bind(&uuids)
-        .fetch_all(pool)
-        .await.map_err(|e| async_graphql::Error::new(e.to_string()))?;
+        let id_loader = ctx.data::<DataLoader<ArtistIDByMBIDLoader>>()?;
+        let ids = id_loader.load_many(uuids).await?;
 
-        Ok(rows.into_iter().map(Artist::from).collect())
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let artist_loader = ctx.data::<DataLoader<ArtistLoader>>()?;
+        let artist_ids: Vec<i32> = ids.values().copied().collect();
+        let artists_map = artist_loader.load_many(artist_ids).await?;
+
+        Ok(ids
+            .into_iter()
+            .filter_map(|(_uuid, id)| artists_map.get(&id).cloned())
+            .collect())
     }
 }
 

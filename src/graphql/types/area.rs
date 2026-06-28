@@ -1,9 +1,14 @@
 use crate::graphql::{
     loaders::{
-        alias_area::AreaAliasLoader, annotations_area::AreaAnnotationLoader,
-        entity::tag::TagLoader, iso_code_1_by_area::IsoCode1ByAreaLoader,
-        iso_code_2_by_area::IsoCode2ByAreaLoader, iso_code_3_by_area::IsoCode3ByAreaLoader,
-        relationship::tag_id_by_area::TagIdsByAreaLoader,
+        alias_area::AreaAliasLoader,
+        annotations_area::AreaAnnotationLoader,
+        entity::{area::AreaLoader, tag::TagLoader},
+        iso_code_1_by_area::IsoCode1ByAreaLoader,
+        iso_code_2_by_area::IsoCode2ByAreaLoader,
+        iso_code_3_by_area::IsoCode3ByAreaLoader,
+        relationship::{
+            area_id_by_area_mbid::AreaIDByMBIDLoader, tag_id_by_area::TagIdsByAreaLoader,
+        },
     },
     types::common::{Alias, PartialDate, Tag},
 };
@@ -72,69 +77,23 @@ pub struct AreaQuery;
 
 #[Object]
 impl AreaQuery {
-    async fn area(&self, ctx: &Context<'_>, mbid: String) -> async_graphql::Result<Option<Area>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuid = Uuid::parse_str(&mbid)?;
-
-        let row = sqlx::query_as::<_, AreaRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                comment,
-                type,
-                ended,
-                begin_date_year,
-                begin_date_month,
-                begin_date_day,
-                end_date_year,
-                end_date_month,
-                end_date_day
-            FROM area
-            WHERE gid = $1;",
-        )
-        .bind(uuid)
-        .fetch_optional(pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
-        Ok(row.map(Area::from))
-    }
-
-    async fn areas(
-        &self,
-        ctx: &Context<'_>,
-        mbids: Vec<String>,
-    ) -> async_graphql::Result<Vec<Area>> {
-        let pool = ctx.data::<PgPool>()?;
-        let uuids: Vec<Uuid> = mbids
+    async fn area(&self, ctx: &Context<'_>, mbid: Vec<String>) -> async_graphql::Result<Vec<Area>> {
+        let uuids: Vec<Uuid> = mbid
             .iter()
             .map(|s| Uuid::parse_str(s))
             .collect::<Result<_, _>>()?;
-
-        let rows = sqlx::query_as::<_, AreaRow>(
-            "SELECT
-                id,
-                gid,
-                name,
-                comment,
-                type,
-                ended,
-                begin_date_year,
-                begin_date_month,
-                begin_date_day,
-                end_date_year,
-                end_date_month,
-                end_date_day
-            FROM area
-            WHERE gid = ANY($1);",
-        )
-        .bind(&uuids)
-        .fetch_all(pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-
-        Ok(rows.into_iter().map(Area::from).collect())
+        let id_loader = ctx.data::<DataLoader<AreaIDByMBIDLoader>>()?;
+        let ids = id_loader.load_many(uuids).await?;
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+        let area_loader = ctx.data::<DataLoader<AreaLoader>>()?;
+        let area_ids: Vec<i32> = ids.values().copied().collect();
+        let areas_map = area_loader.load_many(area_ids).await?;
+        Ok(ids
+            .into_iter()
+            .filter_map(|(_uuid, id)| areas_map.get(&id).cloned())
+            .collect())
     }
 }
 
