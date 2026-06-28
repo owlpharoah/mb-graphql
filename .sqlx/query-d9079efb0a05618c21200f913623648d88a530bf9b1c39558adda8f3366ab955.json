@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, gid, name, sort_name, comment,type AS artist_type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day FROM artist WHERE id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "gid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "sort_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "comment",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "artist_type",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "gender",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "ended",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 8,
+        "name": "begin_date_year",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 9,
+        "name": "begin_date_month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 10,
+        "name": "begin_date_day",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 11,
+        "name": "end_date_year",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 12,
+        "name": "end_date_month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 13,
+        "name": "end_date_day",
+        "type_info": "Int2"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "d9079efb0a05618c21200f913623648d88a530bf9b1c39558adda8f3366ab955"
+}

@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, rating, rating_count FROM release_group_meta WHERE id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "rating",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 2,
+        "name": "rating_count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "eb39b5e3a7944f6e14564a41d492e7607a27f47a1deec7033b329b28970f9d62"
+}

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT artist, ipi FROM artist_ipi WHERE artist = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "artist",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "ipi",
+        "type_info": "Bpchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "453df0ae40cb7e34614a84a4c4fde98b503db8e552e82b25566395a24e40a0d9"
+}

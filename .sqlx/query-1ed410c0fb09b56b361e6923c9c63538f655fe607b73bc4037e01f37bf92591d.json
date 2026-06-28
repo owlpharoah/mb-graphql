@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT label, isni FROM label_isni WHERE label = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "isni",
+        "type_info": "Bpchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1ed410c0fb09b56b361e6923c9c63538f655fe607b73bc4037e01f37bf92591d"
+}

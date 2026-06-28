@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT\n                    release AS \"release!\",\n                    date_year,\n                    date_month,\n                    date_day,\n                    country\n                FROM release_event\n                WHERE release = ANY($1)\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "date_year",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 2,
+        "name": "date_month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 3,
+        "name": "date_day",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 4,
+        "name": "country",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "43d332db3d7bec1baca3cea750b5ee7e5c73fe4dd8468b21d4980c0861b3e96a"
+}

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT\n                t.recording,\n                m.release\n            FROM track t\n            JOIN medium m ON m.id = t.medium\n            WHERE t.recording = ANY($1);",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recording",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "release",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "d3cbb1fde2908d9455df4bdf8dd976de470a49f6080dda1a84ebafc9b30bff6c"
+}

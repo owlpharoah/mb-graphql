@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT la.label AS label, a.text AS text\n            FROM label_annotation la\n            JOIN annotation a ON a.id = la.annotation\n            WHERE la.label = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "text",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "d2ea67f5a6fc2adf99801f611fd42303fa23cc8a385d521ec4c50179199f6426"
+}

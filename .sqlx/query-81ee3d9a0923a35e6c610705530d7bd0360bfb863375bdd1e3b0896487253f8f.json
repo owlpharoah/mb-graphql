@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT recording, tag, count FROM recording_tag WHERE recording = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recording",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "tag",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "81ee3d9a0923a35e6c610705530d7bd0360bfb863375bdd1e3b0896487253f8f"
+}

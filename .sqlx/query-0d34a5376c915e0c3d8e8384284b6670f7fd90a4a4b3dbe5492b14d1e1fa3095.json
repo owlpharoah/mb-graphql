@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT release, label , catalog_number FROM release_label WHERE release = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "label",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "catalog_number",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "0d34a5376c915e0c3d8e8384284b6670f7fd90a4a4b3dbe5492b14d1e1fa3095"
+}

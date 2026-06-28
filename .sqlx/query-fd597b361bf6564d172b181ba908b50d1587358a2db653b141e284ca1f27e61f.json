@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT lt.label AS label, g.id AS id\n            FROM label_tag lt\n            JOIN tag t ON t.id = lt.tag\n            JOIN genre g ON g.name = t.name\n            WHERE lt.label = ANY($1)\n            ORDER BY lt.label, lt.count DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "fd597b361bf6564d172b181ba908b50d1587358a2db653b141e284ca1f27e61f"
+}

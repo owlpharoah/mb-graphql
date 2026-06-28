@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, rating, rating_count FROM artist_meta WHERE id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "rating",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 2,
+        "name": "rating_count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "50fd04cdd0832dcdf8d881efb4275e2a285ee9ae784e22a5d107ae60a609f5c6"
+}

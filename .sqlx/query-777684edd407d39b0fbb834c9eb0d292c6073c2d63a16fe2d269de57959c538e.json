@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT ra.release AS release, a.text AS text\n            FROM release_annotation ra\n            JOIN annotation a ON a.id = ra.annotation\n            WHERE ra.release = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "text",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "777684edd407d39b0fbb834c9eb0d292c6073c2d63a16fe2d269de57959c538e"
+}

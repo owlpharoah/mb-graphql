@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT artist , release FROM artist_release WHERE artist = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "artist",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "release",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "dd78a54a1aeaa14e07be19a31169828f0d2a82f7c3a5090a76424d8aac2e654e"
+}

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT DISTINCT\n                    label AS \"label!\",\n                    release\n                FROM release_label\n                WHERE label = ANY($1)\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "release",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "bf8137b394cce7aecc1a61689a64cf8bf8d1915fdfce197d95dbc085b39d2961"
+}

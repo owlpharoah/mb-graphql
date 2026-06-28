@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT at.artist AS artist, g.id AS id\n            FROM artist_tag at\n            JOIN tag t ON t.id = at.tag\n            JOIN genre g ON g.name = t.name\n            WHERE at.artist = ANY($1)\n            ORDER BY at.artist, at.count DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "artist",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "0e6259ebecff44e1fff90156aa13ee1f81d9bf4eaa344043170a5fd2215086af"
+}

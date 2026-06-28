@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT aa.area AS area, a.text AS text\n            FROM area_annotation aa\n            JOIN annotation a ON a.id = aa.annotation\n            WHERE aa.area = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "area",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "text",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "257c7f12f15111db9e43c43e1afa564950b628c4e0d6dc4e204727e6d258f9aa"
+}

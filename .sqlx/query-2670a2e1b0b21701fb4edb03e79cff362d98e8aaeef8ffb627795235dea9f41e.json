@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, rating, rating_count FROM recording_meta WHERE id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "rating",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 2,
+        "name": "rating_count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "2670a2e1b0b21701fb4edb03e79cff362d98e8aaeef8ffb627795235dea9f41e"
+}

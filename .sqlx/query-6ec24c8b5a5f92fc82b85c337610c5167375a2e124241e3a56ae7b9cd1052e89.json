@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                id,\n                gid,\n                name,\n                begin_date_year,\n                begin_date_month,\n                begin_date_day,\n                end_date_year,\n                end_date_month,\n                end_date_day,\n                type AS label_type,\n                comment,\n                ended,\n                label_code\n            FROM label\n            WHERE id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "gid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "begin_date_year",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 4,
+        "name": "begin_date_month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 5,
+        "name": "begin_date_day",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 6,
+        "name": "end_date_year",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 7,
+        "name": "end_date_month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 8,
+        "name": "end_date_day",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 9,
+        "name": "label_type",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 10,
+        "name": "comment",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 11,
+        "name": "ended",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 12,
+        "name": "label_code",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "6ec24c8b5a5f92fc82b85c337610c5167375a2e124241e3a56ae7b9cd1052e89"
+}

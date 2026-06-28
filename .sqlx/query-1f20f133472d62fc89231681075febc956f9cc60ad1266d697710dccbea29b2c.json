@@ -1,0 +1,82 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                id,\n                gid,\n                name,\n                release_group,\n                status,\n                packaging,\n                quality,\n                language,\n                script,\n                barcode,\n                comment\n            FROM release WHERE id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "gid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "release_group",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "status",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "packaging",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "quality",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 7,
+        "name": "language",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "script",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "barcode",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "comment",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "1f20f133472d62fc89231681075febc956f9cc60ad1266d697710dccbea29b2c"
+}

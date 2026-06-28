@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                ra.release,\n                ra.name,\n                ra.sort_name,\n                at.name AS type_name,\n                ra.locale,\n                ra.primary_for_locale,\n                ra.begin_date_year,\n                ra.begin_date_month,\n                ra.begin_date_day,\n                ra.end_date_year,\n                ra.end_date_month,\n                ra.end_date_day,\n                ra.ended\n            FROM release_alias ra\n            LEFT JOIN release_alias_type at ON at.id = ra.\"type\"\n            WHERE ra.release = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "sort_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "type_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "locale",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "primary_for_locale",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "begin_date_year",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 7,
+        "name": "begin_date_month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 8,
+        "name": "begin_date_day",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 9,
+        "name": "end_date_year",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 10,
+        "name": "end_date_month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 11,
+        "name": "end_date_day",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 12,
+        "name": "ended",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "ba961a75ed7c9346e1eb6cabfec96517cf9b230f4873dd53881f0c7fc05e1aa1"
+}

@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                id,\n                gid,\n                name,\n                release,\n                position,\n                format,\n                track_count\n            FROM medium\n            WHERE id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "gid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "release",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "position",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "format",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "track_count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "81fba4b1b2b2cf7ae239146b8a19e9b02659feaa55eec9a6ffd7a4bf321dc005"
+}

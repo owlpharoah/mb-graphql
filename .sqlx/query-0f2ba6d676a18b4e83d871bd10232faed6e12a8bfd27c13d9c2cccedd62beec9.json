@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT release_group, tag, count FROM release_group_tag WHERE release_group = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release_group",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "tag",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0f2ba6d676a18b4e83d871bd10232faed6e12a8bfd27c13d9c2cccedd62beec9"
+}

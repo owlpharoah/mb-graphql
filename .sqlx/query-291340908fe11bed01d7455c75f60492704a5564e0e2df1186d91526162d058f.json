@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT artist, isni FROM artist_isni WHERE artist = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "artist",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "isni",
+        "type_info": "Bpchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "291340908fe11bed01d7455c75f60492704a5564e0e2df1186d91526162d058f"
+}

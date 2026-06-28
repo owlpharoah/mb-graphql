@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                area,code\n            FROM iso_3166_2\n            WHERE area = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "area",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "code",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "29c71ac26d7f16409abd5395f21b5946de8f0d756b910c6554d5b35c99b6bf4b"
+}

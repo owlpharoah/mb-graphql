@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT rt.release AS release, g.id AS id\n            FROM release_tag rt\n            JOIN tag t ON t.id = rt.tag\n            JOIN genre g ON g.name = t.name\n            WHERE rt.release = ANY($1)\n            ORDER BY rt.release, rt.count DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "442164e685c1b7d9a70d5bb6f5d63e1b74958c85a96dbd2ad21597a1ce3fe6d8"
+}

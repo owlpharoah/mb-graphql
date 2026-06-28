@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT label, ipi FROM label_ipi WHERE label = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "ipi",
+        "type_info": "Bpchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "688790376ef5aefaf040c9205389792d05b58ebb090aa0c3447d613587b6e32f"
+}
