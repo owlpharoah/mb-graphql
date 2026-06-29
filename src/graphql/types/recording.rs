@@ -8,7 +8,7 @@ use crate::graphql::{
         },
         rating_recording::RecordingRatingLoader,
         relationship::{
-            artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader,
+            artist_credit_id_recording::ArtistCreditIdByRecordingLoader,
             genre_id_by_recording::GenreIdsByRecordingLoader,
             recording_id_by_recording_mbid::RecordingIDByMBIDLoader,
             release_id_by_recording::ReleaseIdsByRecordingLoader,
@@ -168,7 +168,7 @@ impl Recording {
             "Recording.artist_credit resolver called"
         );
 
-        let id_loader = ctx.data::<DataLoader<ArtistCreditIdByReleaseGroupLoader>>()?;
+        let id_loader = ctx.data::<DataLoader<ArtistCreditIdByRecordingLoader>>()?;
         let Some(credit_id) = id_loader.load_one(self.id).await? else {
             return Ok(vec![]);
         };
