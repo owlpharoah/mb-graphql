@@ -9,6 +9,12 @@ struct ArtistIDMBIDRow {
     id: i32,
 }
 
+#[derive(sqlx::FromRow)]
+struct ArtistRedirectRow {
+    gid: Uuid,
+    new_id: i32,
+}
+
 pub struct ArtistIDByMBIDLoader {
     pub pool: PgPool,
 }
@@ -35,6 +41,33 @@ impl Loader<Uuid> for ArtistIDByMBIDLoader {
         for row in rows {
             result.insert(row.gid, row.id);
         }
+
+        let unresolved: Vec<Uuid> = artist_mbids
+            .iter()
+            .filter(|gid| !result.contains_key(gid))
+            .copied()
+            .collect();
+
+        if !unresolved.is_empty() {
+            let redirects = sqlx::query_as!(
+                ArtistRedirectRow,
+                "SELECT gid, new_id FROM artist_gid_redirect WHERE gid = ANY($1)",
+                &unresolved
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+            info!(
+                redirects = redirects.len(),
+                "ArtistIDByMBIDLoader redirect lookup returned"
+            );
+
+            for row in redirects {
+                result.insert(row.gid, row.new_id);
+            }
+        }
+
         Ok(result)
     }
 }

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT gid, new_id FROM release_group_gid_redirect WHERE gid = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "gid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "new_id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "240c2581216f1ee15c9d233b82449141d39cbb3cb8d7f2417ffe05b7b0c88fcf"
+}
