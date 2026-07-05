@@ -4,6 +4,7 @@ use sqlx::PgPool;
 use tracing::info;
 use uuid::Uuid;
 
+use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::{
     loaders::{
         alias_release_group::ReleaseGroupAliasLoader,
@@ -27,7 +28,6 @@ use crate::graphql::{
     },
 };
 use types::common::PartialDate;
-
 #[derive(sqlx::FromRow)]
 pub struct ReleaseGroupRow {
     id: i32,
@@ -46,7 +46,7 @@ pub struct ReleaseGroup {
     #[graphql(name = "type")]
     pub release_group_type: Option<i32>,
 
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
 }
 
@@ -137,11 +137,21 @@ impl ReleaseGroup {
         Ok(pdate)
     }
 
-    async fn releases(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+    async fn releases(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Release>> {
         info!(rg_id = self.id, "rg.releases resolver called");
 
         let rg_ids = ctx.data::<DataLoader<ReleaseIdByReleaseGroupLoader>>()?;
-        let ids = rg_ids.load_one(self.id).await?.unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let ids = rg_ids.load_one(key).await?.unwrap_or_default();
         info!(
             rg_id = self.id,
             releases_count = ids.len(),

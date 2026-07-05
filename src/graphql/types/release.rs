@@ -50,7 +50,7 @@ pub struct Release {
     pub barcode: Option<String>,
     pub disambiguation: Option<String>,
 
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
     #[graphql(skip)]
     pub release_group: i32,

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT gid AS \"gid!\", id AS \"id!\" FROM (\n                SELECT gid, id FROM release_group WHERE gid = ANY($1)\n                UNION ALL\n                SELECT gid, new_id AS id FROM release_group_gid_redirect WHERE gid = ANY($1)\n            ) combined",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "gid!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "id!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "a211bb80a0b1d6b2d0b7aa0c1ec82d2afec4497ef5576550827896661d9ac96b"
+}

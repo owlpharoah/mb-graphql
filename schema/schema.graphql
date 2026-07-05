@@ -35,8 +35,8 @@ type Artist {
 	ended: Boolean!
 	beginDate: PartialDate
 	endDate: PartialDate
-	releaseGroups: [ReleaseGroup!]!
-	releases: [Release!]!
+	releaseGroups(first: Int! = 25, after: Int): [ReleaseGroup!]!
+	releases(first: Int! = 25, after: Int): [Release!]!
 	tags: [Tag!]!
 	rating: Rating
 	genres: [Genre!]!
@@ -69,7 +69,7 @@ type Label {
 	ended: Boolean!
 	beginDate: PartialDate
 	endDate: PartialDate
-	release: [Release!]!
+	release(first: Int! = 25, after: Int): [Release!]!
 	rating: Rating
 	genres: [Genre!]!
 	annotation: String
@@ -121,7 +121,7 @@ type Recording {
 	video: Boolean!
 	firstReleaseDate: PartialDate
 	isrc: String
-	release: [Release!]!
+	release(first: Int! = 25, after: Int): [Release!]!
 	rating: Rating
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!
@@ -164,7 +164,7 @@ type ReleaseGroup {
 	type: Int
 	secondaryType: [Int!]
 	firstReleaseDate: PartialDate
-	releases: [Release!]!
+	releases(first: Int! = 25, after: Int): [Release!]!
 	rating: Rating
 	artistCredit: [ArtistCredit!]!
 	genres: [Genre!]!

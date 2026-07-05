@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT recording AS \"recording!\", release AS \"release!\"\n                FROM (\n                    SELECT t.recording, m.release,\n                           ROW_NUMBER() OVER (PARTITION BY t.recording ORDER BY m.release) AS rn\n                    FROM track t\n                    JOIN medium m ON m.id = t.medium\n                    WHERE t.recording = ANY($1)\n                      AND ($2::int IS NULL OR m.release > $2)\n                ) ranked\n                WHERE rn <= $3\n                ORDER BY recording, release",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recording!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "release!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "76d4d1ddd26783085ad8bc99247d421d21cce2770fc05f8d64558d5e1059c01b"
+}

@@ -1,3 +1,4 @@
+use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::{
     loaders::{
         alias_recording::RecordingAliasLoader,
@@ -26,7 +27,6 @@ use sqlx::PgPool;
 use tracing::info;
 use types::common::PartialDate;
 use uuid::Uuid;
-
 #[derive(sqlx::FromRow)]
 pub struct RecordingRow {
     pub id: i32,
@@ -45,7 +45,7 @@ pub struct Recording {
     pub length: Option<i32>,
     pub video: bool,
 
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
 }
 
@@ -132,14 +132,21 @@ impl Recording {
         Ok(rows)
     }
 
-    async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+    async fn release(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Release>> {
         info!(recording_id = self.id, "Recording.releases resolver called");
 
         let release_id_loader = ctx.data::<DataLoader<ReleaseIdsByRecordingLoader>>()?;
-        let release_id = release_id_loader
-            .load_one(self.id)
-            .await?
-            .unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let release_id = release_id_loader.load_one(key).await?.unwrap_or_default();
         info!(
             recording_id = self.id,
             releases_count = release_id.len(),

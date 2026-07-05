@@ -27,3 +27,10 @@ pub mod tag_id_by_recording;
 pub mod tag_id_by_release;
 pub mod tag_id_by_release_group;
 pub mod track_id_by_medium;
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub struct PageKey {
+    pub entity_id: i32,
+    pub after: Option<i32>,
+    pub first: i32,
+}

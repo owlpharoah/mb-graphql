@@ -49,7 +49,7 @@ pub struct Area {
     #[graphql(name = "endDate")]
     pub end_date: Option<PartialDate>,
 
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
 }
 

@@ -12,39 +12,68 @@ struct ArtistReleaseGroupIdRow {
 pub struct ReleaseGroupIdsByArtistLoader {
     pub pool: PgPool,
 }
-
-impl Loader<i32> for ReleaseGroupIdsByArtistLoader {
+use crate::graphql::loaders::relationship::PageKey;
+impl Loader<PageKey> for ReleaseGroupIdsByArtistLoader {
     type Value = Vec<i32>;
     type Error = async_graphql::Error;
 
-    async fn load(&self, artist_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+    async fn load(&self, keys: &[PageKey]) -> Result<HashMap<PageKey, Self::Value>, Self::Error> {
         info!(
-            count = artist_ids.len(),
+            count = keys.len(),
             "ReleaseGroupIdsByArtistLoader batch load"
         );
-        let rows = sqlx::query_as!(
-            ArtistReleaseGroupIdRow,
-            "SELECT artist, release_group FROM artist_release_group WHERE artist = ANY($1)",
-            artist_ids
-        )
-        .fetch_all(&self.pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-        info!(
-            rows = rows.len(),
-            "ReleaseGroupIdsByArtistLoader query returned"
-        );
 
-        let mut result: HashMap<i32, Vec<i32>> = HashMap::new();
-        for row in rows {
-            result
-                .entry(row.artist)
+        let mut groups: HashMap<(Option<i32>, i32), Vec<i32>> = HashMap::new();
+        for key in keys {
+            groups
+                .entry((key.after, key.first))
                 .or_default()
-                .push(row.release_group);
+                .push(key.entity_id);
         }
-        for id in artist_ids {
-            result.entry(*id).or_default();
+
+        let mut result: HashMap<PageKey, Vec<i32>> = HashMap::new();
+
+        for ((after, first), entity_ids) in groups {
+            let rows = sqlx::query_as!(
+                ArtistReleaseGroupIdRow,
+                r#"SELECT artist AS "artist!", release_group AS "release_group!"
+                FROM (
+                    SELECT artist, release_group,
+                           ROW_NUMBER() OVER (PARTITION BY artist ORDER BY release_group) AS rn
+                    FROM artist_release_group
+                    WHERE artist = ANY($1)
+                      AND ($2::int IS NULL OR release_group > $2)
+                ) ranked
+                WHERE rn <= $3
+                ORDER BY artist, release_group"#,
+                &entity_ids,
+                after,
+                first as i64
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+            let mut group_result: HashMap<i32, Vec<i32>> = HashMap::new();
+            for row in rows {
+                group_result
+                    .entry(row.artist)
+                    .or_default()
+                    .push(row.release_group);
+            }
+
+            for id in &entity_ids {
+                result.insert(
+                    PageKey {
+                        entity_id: *id,
+                        after,
+                        first,
+                    },
+                    group_result.remove(id).unwrap_or_default(),
+                );
+            }
         }
+
         Ok(result)
     }
 }

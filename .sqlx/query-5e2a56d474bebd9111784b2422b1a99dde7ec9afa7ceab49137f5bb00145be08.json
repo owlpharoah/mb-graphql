@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT gid AS \"gid!\", id AS \"id!\" FROM (\n                SELECT gid, id FROM artist WHERE gid = ANY($1)\n                UNION ALL\n                SELECT gid, new_id AS id FROM artist_gid_redirect WHERE gid = ANY($1)\n            ) combined",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "gid!",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "id!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "5e2a56d474bebd9111784b2422b1a99dde7ec9afa7ceab49137f5bb00145be08"
+}

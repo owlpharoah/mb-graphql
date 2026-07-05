@@ -102,7 +102,7 @@ pub struct Track {
     pub recording_id: i32,
     #[graphql(skip)]
     pub medium: i32,
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
 }
 
@@ -116,7 +116,7 @@ pub struct Medium {
     pub name: String,
     #[graphql(name = "trackCount")]
     pub track_count: i32,
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
     #[graphql(skip)]
     pub release: i32,

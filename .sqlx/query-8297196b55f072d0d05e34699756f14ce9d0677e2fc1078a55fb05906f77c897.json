@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT artist AS \"artist!\", release_group AS \"release_group!\"\n                FROM (\n                    SELECT artist, release_group,\n                           ROW_NUMBER() OVER (PARTITION BY artist ORDER BY release_group) AS rn\n                    FROM artist_release_group\n                    WHERE artist = ANY($1)\n                      AND ($2::int IS NULL OR release_group > $2)\n                ) ranked\n                WHERE rn <= $3\n                ORDER BY artist, release_group",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "artist!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "release_group!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "8297196b55f072d0d05e34699756f14ce9d0677e2fc1078a55fb05906f77c897"
+}

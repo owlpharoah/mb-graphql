@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT label AS \"label!\", release AS \"release!\"\n                FROM (\n                    SELECT label, release,\n                           ROW_NUMBER() OVER (PARTITION BY label ORDER BY release) AS rn\n                    FROM release_label\n                    WHERE label = ANY($1)\n                      AND ($2::int IS NULL OR release > $2)\n                ) ranked\n                WHERE rn <= $3\n                ORDER BY label, release",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "release!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "e07b5448b437ce11df155cee51ffe4f9025f59ab959c5cd696da647ee5936e33"
+}

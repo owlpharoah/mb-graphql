@@ -1,3 +1,4 @@
+use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::{
     loaders::{
         alias_label::LabelAliasLoader,
@@ -26,7 +27,6 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 use types::common::PartialDate;
 use uuid::Uuid;
-
 #[derive(sqlx::FromRow)]
 pub struct LabelRow {
     pub id: i32,
@@ -58,7 +58,7 @@ pub struct Label {
     #[graphql(name = "endDate")]
     pub end_date: Option<PartialDate>,
 
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
 }
 
@@ -112,14 +112,21 @@ impl LabelQuery {
 
 #[ComplexObject]
 impl Label {
-    async fn release(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+    async fn release(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Release>> {
         info!(label_id = self.id, "Label.releases resolver called");
 
         let release_id_loader = ctx.data::<DataLoader<ReleaseIdsByLabelLoader>>()?;
-        let release_id = release_id_loader
-            .load_one(self.id)
-            .await?
-            .unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let release_id = release_id_loader.load_one(key).await?.unwrap_or_default();
         info!(
             label_id = self.id,
             releases_count = release_id.len(),

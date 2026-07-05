@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 use uuid::Uuid;
 
+use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::{
     loaders::{
         alias_artist::ArtistAliasLoader,
@@ -34,7 +35,6 @@ use crate::graphql::{
     },
 };
 use types::common::PartialDate;
-
 #[derive(sqlx::FromRow)]
 pub struct ArtistRow {
     pub id: i32,
@@ -71,7 +71,7 @@ pub struct Artist {
     #[graphql(name = "endDate")]
     pub end_date: Option<PartialDate>,
 
-    #[graphql(skip)]
+    #[graphql(name = "cursor")]
     pub id: i32,
 }
 
@@ -131,11 +131,21 @@ impl ArtistQuery {
 
 #[ComplexObject]
 impl Artist {
-    async fn release_groups(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseGroup>> {
+    async fn release_groups(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<ReleaseGroup>> {
         info!(artist_id = self.id, "Artist.release_groups resolver called");
 
         let artist_ids = ctx.data::<DataLoader<ReleaseGroupIdsByArtistLoader>>()?;
-        let ids = artist_ids.load_one(self.id).await?.unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let ids = artist_ids.load_one(key).await?.unwrap_or_default();
 
         info!(
             artist_id = self.id,
@@ -155,10 +165,20 @@ impl Artist {
             .filter_map(|id| rg_map.get(&id).cloned())
             .collect())
     }
-    async fn releases(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Release>> {
+    async fn releases(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Release>> {
         info!(artist_id = self.id, "Artist.releases resolver called");
         let artist_ids = ctx.data::<DataLoader<ReleaseIdsByArtistLoader>>()?;
-        let ids = artist_ids.load_one(self.id).await?.unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let ids = artist_ids.load_one(key).await?.unwrap_or_default();
         info!(
             artist_id = self.id,
             releases_count = ids.len(),
