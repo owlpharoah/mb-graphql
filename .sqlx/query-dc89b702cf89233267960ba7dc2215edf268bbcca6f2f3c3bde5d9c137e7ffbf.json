@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT medium AS \"medium!\", id AS \"id!\"\n                FROM (\n                    SELECT medium, id,\n                           ROW_NUMBER() OVER (PARTITION BY medium ORDER BY id) AS rn\n                    FROM track\n                    WHERE medium = ANY($1)\n                      AND ($2::int IS NULL OR id > $2)\n                ) ranked\n                WHERE rn <= $3\n                ORDER BY medium, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "medium!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "id!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "dc89b702cf89233267960ba7dc2215edf268bbcca6f2f3c3bde5d9c137e7ffbf"
+}

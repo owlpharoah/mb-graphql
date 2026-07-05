@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT release AS \"release!\", id AS \"id!\"\n                FROM (\n                    SELECT rt.release, g.id,\n                           ROW_NUMBER() OVER (PARTITION BY rt.release ORDER BY g.id) AS rn\n                    FROM release_tag rt\n                    JOIN tag t ON t.id = rt.tag\n                    JOIN genre g ON g.name = t.name\n                    WHERE rt.release = ANY($1)\n                      AND ($2::int IS NULL OR g.id > $2)\n                ) ranked\n                WHERE rn <= $3\n                ORDER BY release, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "id!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "b8e9738d9bcecef8e1981b75efc5df4268986a418503bbc548cbc644d1b760bd"
+}

@@ -12,28 +12,63 @@ pub struct TrackIdByMediumLoader {
     pub pool: PgPool,
 }
 
-impl Loader<i32> for TrackIdByMediumLoader {
+use crate::graphql::loaders::relationship::PageKey;
+
+impl Loader<PageKey> for TrackIdByMediumLoader {
     type Value = Vec<i32>;
     type Error = async_graphql::Error;
 
-    async fn load(&self, m_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
-        info!(count = m_ids.len(), "TrackIdByMediumLoader batch load");
-        let rows = sqlx::query_as!(
-            MediumTrackIdRow,
-            "SELECT id , medium FROM track WHERE medium = ANY($1)",
-            m_ids
-        )
-        .fetch_all(&self.pool)
-        .await
-        .map_err(|e| async_graphql::Error::new(e.to_string()))?;
-        info!(rows = rows.len(), "TrackIdByMediumLoader query returned");
-        let mut result: HashMap<i32, Vec<i32>> = HashMap::new();
-        for row in rows {
-            result.entry(row.medium).or_default().push(row.id);
+    async fn load(&self, keys: &[PageKey]) -> Result<HashMap<PageKey, Self::Value>, Self::Error> {
+        info!(count = keys.len(), "TrackIdByMediumLoader batch load");
+
+        let mut groups: HashMap<(Option<i32>, i32), Vec<i32>> = HashMap::new();
+        for key in keys {
+            groups
+                .entry((key.after, key.first))
+                .or_default()
+                .push(key.entity_id);
         }
-        for id in m_ids {
-            result.entry(*id).or_default();
+
+        let mut result: HashMap<PageKey, Vec<i32>> = HashMap::new();
+
+        for ((after, first), entity_ids) in groups {
+            let rows = sqlx::query_as!(
+                MediumTrackIdRow,
+                r#"SELECT medium AS "medium!", id AS "id!"
+                FROM (
+                    SELECT medium, id,
+                           ROW_NUMBER() OVER (PARTITION BY medium ORDER BY id) AS rn
+                    FROM track
+                    WHERE medium = ANY($1)
+                      AND ($2::int IS NULL OR id > $2)
+                ) ranked
+                WHERE rn <= $3
+                ORDER BY medium, id"#,
+                &entity_ids,
+                after,
+                first as i64
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+            let mut group_result: HashMap<i32, Vec<i32>> = HashMap::new();
+            for row in rows {
+                group_result.entry(row.medium).or_default().push(row.id);
+            }
+
+            for id in &entity_ids {
+                result.insert(
+                    PageKey {
+                        entity_id: *id,
+                        after,
+                        first,
+                    },
+                    group_result.remove(id).unwrap_or_default(),
+                );
+            }
         }
+
         Ok(result)
     }
 }

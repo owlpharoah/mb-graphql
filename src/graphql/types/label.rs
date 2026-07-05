@@ -149,11 +149,21 @@ impl Label {
         let loader = ctx.data::<DataLoader<LabelRatingLoader>>()?;
         loader.load_one(self.id).await
     }
-    async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
+    async fn genres(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Genre>> {
         info!(label_id = self.id, "Label.genres resolver called");
 
         let id_loader = ctx.data::<DataLoader<GenreIdsByLabelLoader>>()?;
-        let ids = id_loader.load_one(self.id).await?.unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let ids = id_loader.load_one(key).await?.unwrap_or_default();
 
         if ids.is_empty() {
             return Ok(vec![]);

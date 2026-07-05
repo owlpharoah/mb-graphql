@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT artist AS \"artist!\", id AS \"id!\"\n                FROM (\n                    SELECT at.artist, g.id,\n                           ROW_NUMBER() OVER (PARTITION BY at.artist ORDER BY g.id) AS rn\n                    FROM artist_tag at\n                    JOIN tag t ON t.id = at.tag\n                    JOIN genre g ON g.name = t.name\n                    WHERE at.artist = ANY($1)\n                      AND ($2::int IS NULL OR g.id > $2)\n                ) ranked\n                WHERE rn <= $3\n                ORDER BY artist, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "artist!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "id!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "fbf3b773636537e6b910cfdabedae01a17433d3d88ed197603050aedb8243587"
+}

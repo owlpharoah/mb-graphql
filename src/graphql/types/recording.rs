@@ -183,11 +183,21 @@ impl Recording {
         let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
         Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
-    async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
+    async fn genres(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Genre>> {
         info!(recording_id = self.id, "Recording.genres resolver called");
 
         let id_loader = ctx.data::<DataLoader<GenreIdsByRecordingLoader>>()?;
-        let ids = id_loader.load_one(self.id).await?.unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let ids = id_loader.load_one(key).await?.unwrap_or_default();
 
         if ids.is_empty() {
             return Ok(vec![]);

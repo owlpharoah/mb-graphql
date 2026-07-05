@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT label AS \"label!\", id AS \"id!\"\n                FROM (\n                    SELECT lt.label, g.id,\n                           ROW_NUMBER() OVER (PARTITION BY lt.label ORDER BY g.id) AS rn\n                    FROM label_tag lt\n                    JOIN tag t ON t.id = lt.tag\n                    JOIN genre g ON g.name = t.name\n                    WHERE lt.label = ANY($1)\n                      AND ($2::int IS NULL OR g.id > $2)\n                ) ranked\n                WHERE rn <= $3\n                ORDER BY label, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "id!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int4",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "7afd9d243b3e20ab5ced5792e57bc1bf49bc08063d38a6d3efd1ad8585220a3b"
+}

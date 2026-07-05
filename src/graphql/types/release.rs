@@ -5,6 +5,7 @@ use crate::graphql::loaders::entity::genre::GenreLoader;
 use crate::graphql::loaders::entity::medium::MediumLoader;
 use crate::graphql::loaders::entity::release::ReleaseLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
+use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
 use crate::graphql::loaders::relationship::genre_id_by_release::GenreIdsByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
@@ -189,14 +190,21 @@ impl Release {
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 
-    async fn medium(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Medium>> {
+    async fn medium(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Medium>> {
         info!(release_id = self.id, "Release.medium resolver called");
 
         let medium_ids_loader = ctx.data::<DataLoader<MediumIdByReleaseLoader>>()?;
-        let medium_ids = medium_ids_loader
-            .load_one(self.id)
-            .await?
-            .unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let medium_ids = medium_ids_loader.load_one(key).await?.unwrap_or_default();
         info!(
             release_id = self.id,
             medium_count = medium_ids.len(),
@@ -238,11 +246,21 @@ impl Release {
         let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
         Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
-    async fn genres(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Genre>> {
+    async fn genres(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Genre>> {
         info!(release_id = self.id, "Release.genres resolver called");
 
         let id_loader = ctx.data::<DataLoader<GenreIdsByReleaseLoader>>()?;
-        let ids = id_loader.load_one(self.id).await?.unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let ids = id_loader.load_one(key).await?.unwrap_or_default();
 
         if ids.is_empty() {
             return Ok(vec![]);

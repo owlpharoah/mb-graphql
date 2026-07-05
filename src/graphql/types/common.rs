@@ -8,7 +8,7 @@ use crate::graphql::{
             artist::ArtistLoader, artist_credit::ArtistCreditLoader, label::LabelLoader,
             recording::RecordingLoader, tracks::TrackLoader,
         },
-        relationship::track_id_by_medium::TrackIdByMediumLoader,
+        relationship::{PageKey, track_id_by_medium::TrackIdByMediumLoader},
     },
     types::{artist::Artist, label::Label, recording::Recording},
 };
@@ -147,12 +147,19 @@ impl LabelInfo {
 
 #[ComplexObject]
 impl Medium {
-    async fn tracks(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Track>> {
+    async fn tracks(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(default = 25)] first: i32,
+        after: Option<i32>,
+    ) -> async_graphql::Result<Vec<Track>> {
         let track_ids_loader = ctx.data::<DataLoader<TrackIdByMediumLoader>>()?;
-        let track_ids = track_ids_loader
-            .load_one(self.id)
-            .await?
-            .unwrap_or_default();
+        let key = PageKey {
+            entity_id: self.id,
+            after,
+            first,
+        };
+        let track_ids = track_ids_loader.load_one(key).await?.unwrap_or_default();
 
         if track_ids.is_empty() {
             return Ok(vec![]);
