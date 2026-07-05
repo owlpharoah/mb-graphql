@@ -8,8 +8,6 @@ struct ArtistIDMBIDRow {
     gid: Uuid,
     id: i32,
 }
-
-
 pub struct ArtistIDByMBIDLoader {
     pub pool: PgPool,
 }

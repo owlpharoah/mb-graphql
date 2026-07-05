@@ -10,7 +10,6 @@ struct ReleaseGroupIDMBIDRow {
     id: i32,
 }
 
-
 pub struct ReleaseGroupIDByMBIDLoader {
     pub pool: PgPool,
 }
