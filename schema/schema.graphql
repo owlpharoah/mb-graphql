@@ -17,6 +17,7 @@ type Area {
 	ended: Boolean!
 	beginDate: PartialDate
 	endDate: PartialDate
+	cursor: Int!
 	isoCode1: [String!]!
 	isoCode2: [String!]!
 	isoCode3: [String!]!
@@ -35,11 +36,12 @@ type Artist {
 	ended: Boolean!
 	beginDate: PartialDate
 	endDate: PartialDate
+	cursor: Int!
 	releaseGroups(first: Int! = 25, after: Int): [ReleaseGroup!]!
 	releases(first: Int! = 25, after: Int): [Release!]!
 	tags: [Tag!]!
 	rating: Rating
-	genres: [Genre!]!
+	genres(first: Int! = 25, after: Int): [Genre!]!
 	annotation: String
 	area: Area
 	beginArea: Area
@@ -69,9 +71,10 @@ type Label {
 	ended: Boolean!
 	beginDate: PartialDate
 	endDate: PartialDate
+	cursor: Int!
 	release(first: Int! = 25, after: Int): [Release!]!
 	rating: Rating
-	genres: [Genre!]!
+	genres(first: Int! = 25, after: Int): [Genre!]!
 	annotation: String
 	area: Area
 	ipis: [String!]!
@@ -90,7 +93,8 @@ type Medium {
 	position: Int!
 	name: String!
 	trackCount: Int!
-	tracks: [Track!]!
+	cursor: Int!
+	tracks(first: Int! = 25, after: Int): [Track!]!
 }
 
 type PartialDate {
@@ -119,12 +123,13 @@ type Recording {
 	disambiguation: String
 	length: Int
 	video: Boolean!
+	cursor: Int!
 	firstReleaseDate: PartialDate
 	isrc: String
 	release(first: Int! = 25, after: Int): [Release!]!
 	rating: Rating
 	artistCredit: [ArtistCredit!]!
-	genres: [Genre!]!
+	genres(first: Int! = 25, after: Int): [Genre!]!
 	annotation: String
 	alias: [Alias!]!
 }
@@ -139,15 +144,16 @@ type Release {
 	script: Int
 	barcode: String
 	disambiguation: String
+	cursor: Int!
 	date: PartialDate
 	asin: [String!]
 	country: String
 	releaseGroup: ReleaseGroup
 	labelInfo: [LabelInfo!]!
-	medium: [Medium!]!
+	medium(first: Int! = 25, after: Int): [Medium!]!
 	releaseEvents: [ReleaseEvent!]!
 	artistCredit: [ArtistCredit!]!
-	genres: [Genre!]!
+	genres(first: Int! = 25, after: Int): [Genre!]!
 	annotation: String
 	alias: [Alias!]!
 }
@@ -162,12 +168,13 @@ type ReleaseGroup {
 	name: String!
 	disambiguation: String
 	type: Int
+	cursor: Int!
 	secondaryType: [Int!]
 	firstReleaseDate: PartialDate
 	releases(first: Int! = 25, after: Int): [Release!]!
 	rating: Rating
 	artistCredit: [ArtistCredit!]!
-	genres: [Genre!]!
+	genres(first: Int! = 25, after: Int): [Genre!]!
 	annotation: String
 	alias: [Alias!]!
 }
@@ -183,6 +190,7 @@ type Track {
 	number: String!
 	position: Int!
 	length: Int
+	cursor: Int!
 	recording: Recording
 	artistCredit: [ArtistCredit!]
 }
