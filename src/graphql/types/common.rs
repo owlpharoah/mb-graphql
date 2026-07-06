@@ -134,6 +134,7 @@ impl PartialDate {
 
 #[ComplexObject]
 impl LabelInfo {
+    #[graphql(complexity = "5 + child_complexity")]
     async fn label(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Label>> {
         let Some(label_id) = self.label_id else {
             return Ok(None);
@@ -147,10 +148,11 @@ impl LabelInfo {
 
 #[ComplexObject]
 impl Medium {
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn tracks(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Track>> {
         let track_ids_loader = ctx.data::<DataLoader<TrackIdByMediumLoader>>()?;
@@ -177,10 +179,12 @@ impl Medium {
 
 #[ComplexObject]
 impl Track {
+    #[graphql(complexity = "5 + child_complexity")]
     async fn recording(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Recording>> {
         let recording_loader = ctx.data::<DataLoader<RecordingLoader>>()?;
         recording_loader.load_one(self.recording_id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn artist_credit(
         &self,
         ctx: &Context<'_>,
@@ -192,6 +196,7 @@ impl Track {
 
 #[ComplexObject]
 impl ArtistCredit {
+    #[graphql(complexity = "5 + child_complexity")]
     async fn artist(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Artist>> {
         let artist_loader = ctx.data::<DataLoader<ArtistLoader>>()?;
         artist_loader.load_one(self.artist_id).await

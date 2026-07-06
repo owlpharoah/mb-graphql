@@ -86,6 +86,7 @@ pub struct LabelQuery;
 
 #[Object]
 impl LabelQuery {
+    #[graphql(complexity = "mbid.len() * (5 + child_complexity)")]
     async fn label(
         &self,
         ctx: &Context<'_>,
@@ -112,10 +113,11 @@ impl LabelQuery {
 
 #[ComplexObject]
 impl Label {
+    #[graphql(complexity = "2 * first as usize * child_complexity")]
     async fn release(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Release>> {
         info!(label_id = self.id, "Label.releases resolver called");
@@ -144,15 +146,17 @@ impl Label {
             .filter_map(|id| release_map.get(&id).cloned())
             .collect())
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(label_id = self.id, "Label.rating resolver called");
         let loader = ctx.data::<DataLoader<LabelRatingLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn genres(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Genre>> {
         info!(label_id = self.id, "Label.genres resolver called");
@@ -182,6 +186,7 @@ impl Label {
         let loader = ctx.data::<DataLoader<LabelAnnotationLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(label_id = self.id, "Label.area resolver called");
 
@@ -206,6 +211,7 @@ impl Label {
         let loader = ctx.data::<DataLoader<LabelIsniLoader>>()?;
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(label_id = self.id, "Label.aliases resolver called");
         let loader = ctx.data::<DataLoader<LabelAliasLoader>>()?;

@@ -77,6 +77,7 @@ pub struct AreaQuery;
 
 #[Object]
 impl AreaQuery {
+    #[graphql(complexity = "mbid.len() * (5 + child_complexity)")]
     async fn area(&self, ctx: &Context<'_>, mbid: Vec<String>) -> async_graphql::Result<Vec<Area>> {
         let uuids: Vec<Uuid> = mbid
             .iter()
@@ -114,6 +115,7 @@ impl Area {
 
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn tags(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Tag>> {
         info!(area_id = self.id, "Area.tags resolver called");
 
@@ -143,6 +145,7 @@ impl Area {
         let loader = ctx.data::<DataLoader<AreaAnnotationLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(area_id = self.id, "Area.aliases resolver called");
         let loader = ctx.data::<DataLoader<AreaAliasLoader>>()?;

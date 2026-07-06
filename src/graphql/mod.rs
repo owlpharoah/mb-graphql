@@ -232,8 +232,8 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let isni_label = DataLoader::new(LabelIsniLoader { pool: pool.clone() }, tokio::spawn);
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
-        .limit_depth(10)
-        .limit_complexity(200)
+        .limit_depth(5)
+        .limit_complexity(300)
         .data(pool)
         .data(rg_entity_loader)
         .data(r_entity_loader)
@@ -308,6 +308,6 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
 pub fn build_schema_export() -> AppSchema {
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(5)
-        .limit_complexity(200)
+        .limit_complexity(300)
         .finish()
 }

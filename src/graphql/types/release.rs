@@ -80,6 +80,7 @@ pub struct ReleaseQuery;
 
 #[Object]
 impl ReleaseQuery {
+    #[graphql(complexity = "mbid.len() * (5 + child_complexity)")]
     async fn release(
         &self,
         ctx: &Context<'_>,
@@ -164,6 +165,7 @@ impl Release {
     }
 
     //backward
+    #[graphql(complexity = "5 + child_complexity")]
     async fn release_group(
         &self,
         ctx: &Context<'_>,
@@ -182,6 +184,7 @@ impl Release {
         Ok(row.map(ReleaseGroup::from))
     }
 
+    #[graphql(complexity = "3 * child_complexity")]
     async fn label_info(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<LabelInfo>> {
         info!(release_id = self.id, "Release.label_info resolver called");
 
@@ -190,10 +193,11 @@ impl Release {
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 
+    #[graphql(complexity = "2 * first as usize * child_complexity")]
     async fn medium(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Medium>> {
         info!(release_id = self.id, "Release.medium resolver called");
@@ -222,6 +226,7 @@ impl Release {
             .collect())
     }
 
+    #[graphql(complexity = "3 * child_complexity")]
     async fn release_events(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ReleaseEvent>> {
         info!(
             release_id = self.id,
@@ -232,6 +237,7 @@ impl Release {
 
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
         info!(
             release_id = self.id,
@@ -246,10 +252,11 @@ impl Release {
         let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
         Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn genres(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Genre>> {
         info!(release_id = self.id, "Release.genres resolver called");
@@ -279,6 +286,7 @@ impl Release {
         let loader = ctx.data::<DataLoader<ReleaseAnnotationLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(release_id = self.id, "Release.aliases resolver called");
         let loader = ctx.data::<DataLoader<ReleaseAliasLoader>>()?;

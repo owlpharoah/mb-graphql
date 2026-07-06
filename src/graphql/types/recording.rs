@@ -67,6 +67,7 @@ pub struct RecordingQuery;
 
 #[Object]
 impl RecordingQuery {
+    #[graphql(complexity = "mbid.len() * (5 + child_complexity)")]
     async fn recording(
         &self,
         ctx: &Context<'_>,
@@ -132,10 +133,11 @@ impl Recording {
         Ok(rows)
     }
 
+    #[graphql(complexity = "2 * first as usize * child_complexity")]
     async fn release(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Release>> {
         info!(recording_id = self.id, "Recording.releases resolver called");
@@ -164,11 +166,13 @@ impl Recording {
             .filter_map(|id| release_map.get(&id).cloned())
             .collect())
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(recording_id = self.id, "Recording.rating resolver called");
         let loader = ctx.data::<DataLoader<RecordingRatingLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
         info!(
             recording_id = self.id,
@@ -183,10 +187,11 @@ impl Recording {
         let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
         Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn genres(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Genre>> {
         info!(recording_id = self.id, "Recording.genres resolver called");
@@ -219,6 +224,7 @@ impl Recording {
         let loader = ctx.data::<DataLoader<RecordingAnnotationLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(recording_id = self.id, "Recording.aliases resolver called");
         let loader = ctx.data::<DataLoader<RecordingAliasLoader>>()?;

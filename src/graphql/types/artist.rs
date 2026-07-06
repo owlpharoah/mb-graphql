@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 use uuid::Uuid;
 
-use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::{
     loaders::{
         alias_artist::ArtistAliasLoader,
@@ -15,6 +14,7 @@ use crate::graphql::{
             release_group::ReleaseGroupLoader, tag::TagLoader,
         },
         rating_artist::ArtistRatingLoader,
+        relationship::PageKey,
         relationship::{
             area_id_by_artist::{
                 AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
@@ -101,6 +101,7 @@ pub struct ArtistQuery;
 
 #[Object]
 impl ArtistQuery {
+    #[graphql(complexity = "mbid.len() * (5 + child_complexity)")]
     async fn artist(
         &self,
         ctx: &Context<'_>,
@@ -131,10 +132,11 @@ impl ArtistQuery {
 
 #[ComplexObject]
 impl Artist {
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn release_groups(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<ReleaseGroup>> {
         info!(artist_id = self.id, "Artist.release_groups resolver called");
@@ -165,10 +167,11 @@ impl Artist {
             .filter_map(|id| rg_map.get(&id).cloned())
             .collect())
     }
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn releases(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Release>> {
         info!(artist_id = self.id, "Artist.releases resolver called");
@@ -196,6 +199,7 @@ impl Artist {
             .filter_map(|id| r_map.get(&id).cloned())
             .collect())
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn tags(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Tag>> {
         info!(artist_id = self.id, "Artist.tags resolver called");
 
@@ -220,15 +224,17 @@ impl Artist {
             })
             .collect())
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(artist_id = self.id, "Artist.rating resolver called");
         let loader = ctx.data::<DataLoader<ArtistRatingLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn genres(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Genre>> {
         info!(artist_id = self.id, "Artist.genres resolver called");
@@ -258,6 +264,7 @@ impl Artist {
         let loader = ctx.data::<DataLoader<ArtistAnnotationLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(artist_id = self.id, "Artist.area resolver called");
 
@@ -271,6 +278,7 @@ impl Artist {
 
         area_loader.load_one(area_id).await
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn begin_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(artist_id = self.id, "Artist.beginarea resolver called");
 
@@ -284,6 +292,7 @@ impl Artist {
 
         area_loader.load_one(area_id).await
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn end_area(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Area>> {
         info!(artist_id = self.id, "Artist.endarea resolver called");
 
@@ -297,6 +306,7 @@ impl Artist {
 
         area_loader.load_one(area_id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(artist_id = self.id, "Artist.aliases resolver called");
         let loader = ctx.data::<DataLoader<ArtistAliasLoader>>()?;

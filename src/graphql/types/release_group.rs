@@ -67,6 +67,7 @@ pub struct ReleaseGroupQuery;
 
 #[Object]
 impl ReleaseGroupQuery {
+    #[graphql(complexity = "mbid.len() * (5 + child_complexity)")]
     async fn release_group(
         &self,
         ctx: &Context<'_>,
@@ -137,10 +138,11 @@ impl ReleaseGroup {
         Ok(pdate)
     }
 
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn releases(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Release>> {
         info!(rg_id = self.id, "rg.releases resolver called");
@@ -169,11 +171,13 @@ impl ReleaseGroup {
             .filter_map(|id| r_map.get(&id).cloned())
             .collect())
     }
+    #[graphql(complexity = "5 + child_complexity")]
     async fn rating(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Rating>> {
         info!(rg_id = self.id, "ReleaseGroup.rating resolver called");
         let loader = ctx.data::<DataLoader<ReleaseGroupRatingLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn artist_credit(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<ArtistCredit>> {
         info!(
             release_group_id = self.id,
@@ -188,10 +192,11 @@ impl ReleaseGroup {
         let credit_loader = ctx.data::<DataLoader<ArtistCreditLoader>>()?;
         Ok(credit_loader.load_one(credit_id).await?.unwrap_or_default())
     }
+    #[graphql(complexity = "first as usize * child_complexity")]
     async fn genres(
         &self,
         ctx: &Context<'_>,
-        #[graphql(default = 25)] first: i32,
+        #[graphql(default = 25, validator(maximum = 100))] first: i32,
         after: Option<i32>,
     ) -> async_graphql::Result<Vec<Genre>> {
         info!(rg_id = self.id, "ReleaseGroup.genres resolver called");
@@ -221,6 +226,7 @@ impl ReleaseGroup {
         let loader = ctx.data::<DataLoader<ReleaseGroupAnnotationLoader>>()?;
         loader.load_one(self.id).await
     }
+    #[graphql(complexity = "3 * child_complexity")]
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(rg_id = self.id, "ReleaseGroup.aliases resolver called");
         let loader = ctx.data::<DataLoader<ReleaseGroupAliasLoader>>()?;
