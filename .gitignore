@@ -1,3 +1,6 @@
 /target
 .env
 tracker
+sql_parser.py
+sql.log
+.venv

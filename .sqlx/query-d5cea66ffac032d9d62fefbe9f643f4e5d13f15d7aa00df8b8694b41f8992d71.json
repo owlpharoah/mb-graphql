@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT recording, isrc FROM isrc WHERE recording = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recording",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "isrc",
+        "type_info": "Bpchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "d5cea66ffac032d9d62fefbe9f643f4e5d13f15d7aa00df8b8694b41f8992d71"
+}

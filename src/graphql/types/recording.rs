@@ -1,3 +1,4 @@
+use crate::graphql::loaders::recording_isrc::RecordingISRCLoader;
 use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::{
     loaders::{
@@ -116,21 +117,11 @@ impl Recording {
 
         Ok(pdate)
     }
-    async fn isrc(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
-        let pool = ctx.data::<PgPool>()?;
+    async fn isrc(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<Vec<String>>> {
+        info!(recording_id = self.id, "Recording.isrc resolver called");
+        let isrc_loader = ctx.data::<DataLoader<RecordingISRCLoader>>()?;
 
-        let rows = sqlx::query_scalar(
-            "
-            SELECT isrc
-            FROM isrc
-            WHERE recording = $1
-            ",
-        )
-        .bind(self.id)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(rows)
+        isrc_loader.load_one(self.id).await
     }
 
     #[graphql(complexity = "2 * first as usize * child_complexity")]

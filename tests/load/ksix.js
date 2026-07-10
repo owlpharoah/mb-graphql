@@ -17,10 +17,10 @@ const BATCH_MBIDS = JSON.parse(
 const gqlErrors = new Rate("graphql_errors");
 const simpleLookupTime = new Trend("simple_lookup_duration", true);
 const batchLookupTime = new Trend("batch_lookup_duration", true);
-const deepFanoutTime = new Trend("deep_fanout_duration", true);
 const paginationTime = new Trend("pagination_duration", true);
-const aliasFanoutTime = new Trend("alias_fanout_duration", true);
 const labelCatalogTime = new Trend("label_catalog_duration", true);
+const artistDiscographyTime = new Trend("artist_discography_duration", true);
+const multiArtistCompareTime = new Trend("multi_artist_compare_duration", true);
 
 function safeJson(body) {
   try {
@@ -68,26 +68,27 @@ const Q_BATCH_LOOKUP = `
       name
     }
   }`;
-
-const Q_DEEP_FANOUT = `
-  query DeepFanout($mbid: [String!]!) {
+const Q_ARTIST_DISCOGRAPHY = `
+  query ArtistDiscography($mbid: [String!]!) {
     artist(mbid: $mbid) {
       name
       releaseGroups(first: 25) {
         name
-        releases(first: 10) {
-          name
-          medium(first: 5) {
-            tracks(first: 25) {
-              name
-              recording {
-                name
-                isrc
-              }
-            }
-          }
-        }
+        releases(first: 5) { name }
       }
+    }
+  }`;
+
+const Q_MULTI_ARTIST_COMPARE = `
+  query MultiArtistCompare($mbid1: [String!]!, $mbid2: [String!]!) {
+    a0: artist(mbid: $mbid1) { ...F }
+    a1: artist(mbid: $mbid2) { ...F }
+  }
+  fragment F on Artist {
+    name
+    releaseGroups(first: 10) {
+      name
+      releases(first: 3) { name }
     }
   }`;
 
@@ -98,23 +99,6 @@ const Q_PAGINATION_EDGE = `
       releases(first: $first) {
         name
         cursor
-      }
-    }
-  }`;
-
-const Q_ALIAS_FANOUT = `
-  query AliasFanout($mbid: [String!]!) {
-    a0: artist(mbid: $mbid) { ...F }
-    a1: artist(mbid: $mbid) { ...F }
-    a2: artist(mbid: $mbid) { ...F }
-    a3: artist(mbid: $mbid) { ...F }
-    a4: artist(mbid: $mbid) { ...F }
-  }
-  fragment F on Artist {
-    releaseGroups(first: 25) {
-      name
-      releases(first: 10) {
-        name
       }
     }
   }`;
@@ -152,16 +136,6 @@ export function batchLookup() {
   sleep(0.2);
 }
 
-export function deepFanout() {
-  const res = gql(
-    Q_DEEP_FANOUT,
-    { mbid: [YE_ARTIST_MBID] },
-    { name: "deep_fanout" },
-  );
-  deepFanoutTime.add(res.timings.duration);
-  sleep(0.3);
-}
-
 export function paginationEdge() {
   const first = [25, 50, 100][Math.floor(Math.random() * 3)];
   const res = gql(
@@ -173,16 +147,6 @@ export function paginationEdge() {
   sleep(0.2);
 }
 
-export function aliasFanout() {
-  const res = gql(
-    Q_ALIAS_FANOUT,
-    { mbid: [YE_ARTIST_MBID] },
-    { name: "alias_fanout" },
-  );
-  aliasFanoutTime.add(res.timings.duration);
-  sleep(0.3);
-}
-
 export function labelCatalog() {
   const res = gql(
     Q_LABEL_CATALOG,
@@ -191,6 +155,26 @@ export function labelCatalog() {
   );
   labelCatalogTime.add(res.timings.duration);
   sleep(0.2);
+}
+
+export function artistDiscography() {
+  const res = gql(
+    Q_ARTIST_DISCOGRAPHY,
+    { mbid: [YE_ARTIST_MBID] },
+    { name: "artist_discography" },
+  );
+  artistDiscographyTime.add(res.timings.duration);
+  sleep(0.3);
+}
+
+export function multiArtistCompare() {
+  const res = gql(
+    Q_MULTI_ARTIST_COMPARE,
+    { mbid1: [YE_ARTIST_MBID], mbid2: [ARCTIC_MONKEYS_ARTIST_MBID] },
+    { name: "multi_artist_compare" },
+  );
+  multiArtistCompareTime.add(res.timings.duration);
+  sleep(0.3);
 }
 
 export const options = {
@@ -217,9 +201,9 @@ export const options = {
         { duration: "15s", target: 0 },
       ],
     },
-    deep_fanout: {
+    artist_discography: {
       executor: "ramping-vus",
-      exec: "deepFanout",
+      exec: "artistDiscography",
       startVUs: 0,
       startTime: "3m",
       stages: [
@@ -239,9 +223,9 @@ export const options = {
         { duration: "15s", target: 0 },
       ],
     },
-    alias_fanout: {
+    multi_artist_compare: {
       executor: "ramping-vus",
-      exec: "aliasFanout",
+      exec: "multiArtistCompare",
       startVUs: 0,
       startTime: "5m45s",
       stages: [
@@ -264,10 +248,10 @@ export const options = {
   },
   thresholds: {
     "http_req_duration{name:simple_lookup}": ["p(95)<50"],
-    "http_req_duration{name:batch_lookup}": ["p(95)<150"],
-    "http_req_duration{name:deep_fanout}": ["p(95)<500"],
+    "http_req_duration{name:batch_lookup}": ["p(95)<200"],
+    "http_req_duration{name:artist_discography}": ["p(95)<200"],
     "http_req_duration{name:pagination_edge}": ["p(95)<300"],
-    "http_req_duration{name:alias_fanout}": ["p(95)<800"],
+    "http_req_duration{name:multi_artist_compare}": ["p(95)<300"],
     "http_req_duration{name:label_catalog}": ["p(95)<400"],
     graphql_errors: ["rate<0.01"],
     http_req_failed: ["rate<0.01"],

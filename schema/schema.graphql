@@ -125,7 +125,7 @@ type Recording {
 	video: Boolean!
 	cursor: Int!
 	firstReleaseDate: PartialDate
-	isrc: String
+	isrc: [String!]
 	release(first: Int! = 25, after: Int): [Release!]!
 	rating: Rating
 	artistCredit: [ArtistCredit!]!

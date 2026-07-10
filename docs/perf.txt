@@ -1,0 +1,168 @@
+  █ THRESHOLDS
+
+    graphql_errors
+    ✓ 'rate<0.01' rate=0.00%
+
+    http_req_duration{name:artist_discography}
+    ✗ 'p(95)<200' p(95)=327.26ms
+
+    http_req_duration{name:batch_lookup}
+    ✓ 'p(95)<200' p(95)=67.53ms
+
+    http_req_duration{name:label_catalog}
+    ✓ 'p(95)<400' p(95)=359.51ms
+
+    http_req_duration{name:multi_artist_compare}
+    ✗ 'p(95)<300' p(95)=369.15ms
+
+    http_req_duration{name:pagination_edge}
+    ✓ 'p(95)<300' p(95)=285.33ms
+
+    http_req_duration{name:simple_lookup}
+    ✗ 'p(95)<50' p(95)=734.07ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 42670   86.194794/s
+    checks_succeeded...: 100.00% 42670 out of 42670
+    checks_failed......: 0.00%   0 out of 42670
+
+    ✓ status 200
+    ✓ no graphql errors
+
+    CUSTOM
+    artist_discography_duration.......: avg=142.84ms min=43.94ms  med=117.99ms max=474.69ms p(90)=272.19ms p(95)=327.26ms
+    batch_lookup_duration.............: avg=36.02ms  min=12.76ms  med=32.49ms  max=219.12ms p(90)=56.39ms  p(95)=67.53ms
+    graphql_errors....................: 0.00%  0 out of 21335
+    label_catalog_duration............: avg=173.8ms  min=46.62ms  med=150.14ms max=605.17ms p(90)=280.78ms p(95)=359.51ms
+    multi_artist_compare_duration.....: avg=204.86ms min=47.51ms  med=195.34ms max=684.39ms p(90)=322.42ms p(95)=369.15ms
+    pagination_duration...............: avg=134.55ms min=27.02ms  med=121.84ms max=476.7ms  p(90)=230.94ms p(95)=285.33ms
+    simple_lookup_duration............: avg=260.25ms min=13.3ms   med=185.67ms max=2.39s    p(90)=590.71ms p(95)=734.07ms
+
+    HTTP
+    http_req_duration.................: avg=165.08ms min=12.76ms  med=95.08ms  max=2.39s    p(90)=402.25ms p(95)=549.61ms
+      { expected_response:true }......: avg=165.08ms min=12.76ms  med=95.08ms  max=2.39s    p(90)=402.25ms p(95)=549.61ms
+      { name:artist_discography }.....: avg=142.84ms min=43.94ms  med=117.99ms max=474.69ms p(90)=272.19ms p(95)=327.26ms
+      { name:batch_lookup }...........: avg=36.02ms  min=12.76ms  med=32.49ms  max=219.12ms p(90)=56.39ms  p(95)=67.53ms
+      { name:label_catalog }..........: avg=173.8ms  min=46.62ms  med=150.14ms max=605.17ms p(90)=280.78ms p(95)=359.51ms
+      { name:multi_artist_compare }...: avg=204.86ms min=47.51ms  med=195.34ms max=684.39ms p(90)=322.42ms p(95)=369.15ms
+      { name:pagination_edge }........: avg=134.55ms min=27.02ms  med=121.84ms max=476.7ms  p(90)=230.94ms p(95)=285.33ms
+      { name:simple_lookup }..........: avg=260.25ms min=13.3ms   med=185.67ms max=2.39s    p(90)=590.71ms p(95)=734.07ms
+    http_req_failed...................: 0.00%  0 out of 21335
+    http_reqs.........................: 21335  43.097397/s
+
+    EXECUTION
+    iteration_duration................: avg=376.64ms min=213.42ms med=310.42ms max=2.59s    p(90)=616.17ms p(95)=753.69ms
+    iterations........................: 21335  43.097397/s
+    vus...............................: 1      min=0          max=99
+    vus_max...........................: 105    min=105        max=105
+
+    NETWORK
+    data_received.....................: 21 MB  42 kB/s
+    data_sent.........................: 7.8 MB 16 kB/s
+
+
+
+
+running (8m15.0s), 000/105 VUs, 21335 complete and 0 interrupted iterations
+simple_lookup        ✓ [ 100% ] 000/100 VUs  1m45s
+batch_lookup         ✓ [ 100% ] 00/50 VUs    1m15s
+artist_discography   ✓ [ 100% ] 00/20 VUs    1m15s
+pagination_edge      ✓ [ 100% ] 00/30 VUs    1m15s
+multi_artist_compare ✓ [ 100% ] 00/15 VUs    1m15s
+label_catalog        ✓ [ 100% ] 00/20 VUs    1m15s
+time="2026-07-10T07:49:15Z" level=error msg="thresholds on metrics 'http_req_duration{name:artist_discography}, http_req_duration{name:multi_artist_compare}, http_req_duration{name:simple_lookup}' have been crossed"
+
+========================================================================================================================
+Calls : 10386
+Avg   : 15.969 ms
+Median: 1.070 ms
+P95   : 100.223 ms
+Max   : 593.456 ms
+
+SELECT gid AS "gid!", id AS "id!" FROM ( SELECT gid, id FROM artist WHERE gid = ANY($1) UNION ALL SELECT gid, new_id AS id FROM artist_gid_redirect WHERE gid = ANY($1) ) combined
+
+========================================================================================================================
+Calls : 9774
+Avg   : 15.139 ms
+Median: 0.871 ms
+P95   : 94.552 ms
+Max   : 1033.373 ms
+
+SELECT id, gid, name, sort_name, comment, type AS artist_type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day FROM artist WHERE id = ANY($1)
+
+========================================================================================================================
+Calls : 4941
+Avg   : 6.564 ms
+Median: 2.753 ms
+P95   : 26.023 ms
+Max   : 106.962 ms
+
+SELECT id, gid, name, release_group, status, packaging, quality, language, script, barcode, comment FROM release WHERE id = ANY($1)
+
+========================================================================================================================
+Calls : 4327
+Avg   : 5.008 ms
+Median: 1.365 ms
+P95   : 24.241 ms
+Max   : 94.058 ms
+
+SELECT release_group AS "release_group!", id AS "id!" FROM ( SELECT release_group, id, ROW_NUMBER() OVER ( PARTITION BY release_group ORDER BY id ) AS rn FROM release WHERE release_group = ANY($1) AND ( $2 :: int IS NULL OR id > $2 ) ) ranked WHERE rn <= $3 ORDER BY release_group, id
+
+========================================================================================================================
+Calls : 3803
+Avg   : 4.080 ms
+Median: 0.926 ms
+P95   : 20.505 ms
+Max   : 79.626 ms
+
+SELECT id, gid, name, comment, type AS primary_type FROM release_group WHERE id = ANY($1)
+
+========================================================================================================================
+Calls : 2159
+Avg   : 5.253 ms
+Median: 1.069 ms
+P95   : 24.978 ms
+Max   : 80.486 ms
+
+SELECT gid AS "gid!", id AS "id!" FROM ( SELECT gid, id FROM release_group WHERE gid = ANY($1) UNION ALL SELECT gid, new_id AS id FROM release_group_gid_redirect WHERE gid = ANY($1) ) combined
+
+========================================================================================================================
+Calls : 1798
+Avg   : 6.228 ms
+Median: 2.948 ms
+P95   : 24.643 ms
+Max   : 87.983 ms
+
+SELECT artist AS "artist!", release_group AS "release_group!" FROM ( SELECT artist, release_group, ROW_NUMBER() OVER ( PARTITION BY artist ORDER BY release_group ) AS rn FROM artist_release_group WHERE artist = ANY($1) AND ( $2 :: int IS NULL OR release_group > $2 ) ) ranked WHERE rn <= $3 ORDER BY artist, release_group
+
+========================================================================================================================
+Calls : 1167
+Avg   : 7.199 ms
+Median: 3.360 ms
+P95   : 29.285 ms
+Max   : 126.619 ms
+
+SELECT label AS "label!", release AS "release!" FROM ( SELECT label, release, ROW_NUMBER() OVER ( PARTITION BY label ORDER BY release ) AS rn FROM release_label WHERE label = ANY($1) AND ( $2 :: int IS NULL OR release > $2 ) ) ranked WHERE rn <= $3 ORDER BY label, release
+
+========================================================================================================================
+Calls : 1232
+Avg   : 5.794 ms
+Median: 1.409 ms
+P95   : 28.731 ms
+Max   : 138.375 ms
+
+SELECT gid AS "gid!", id AS "id!" FROM ( SELECT gid, id FROM label WHERE gid = ANY($1) UNION ALL SELECT gid, new_id AS id FROM label_gid_redirect WHERE gid = ANY($1) ) combined
+
+========================================================================================================================
+Calls : 1185
+Avg   : 5.254 ms
+Median: 1.194 ms
+P95   : 27.263 ms
+Max   : 138.065 ms
+
+SELECT id, gid, name, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day, type AS label_type, comment, ended, label_code FROM label WHERE id = ANY($1)

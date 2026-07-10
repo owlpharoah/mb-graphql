@@ -25,4 +25,5 @@ pub mod rating_artist;
 pub mod rating_label;
 pub mod rating_recording;
 pub mod rating_release_group;
+pub mod recording_isrc;
 pub mod release_event_by_release;

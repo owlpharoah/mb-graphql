@@ -8,8 +8,9 @@ async fn main() {
     dotenvy::dotenv().ok();
 
     tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::fmt::layer().with_ansi(false))
         .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracing_subscriber::EnvFilter::new("info,sqlx=debug"))
         .init();
 
     let pool = db::create_pool().await.expect("Couldnt connect to DB");
