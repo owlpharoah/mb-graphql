@@ -1,6 +1,9 @@
 #[path = "integration/common/mod.rs"]
 mod common;
 
+#[path = "../tests/queries/mod.rs"]
+mod queries;
+
 #[path = "integration/artist.rs"]
 mod artist;
 

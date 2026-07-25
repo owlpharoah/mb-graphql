@@ -6,7 +6,7 @@ pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
     let db_url = std::env::var("DATABASE_URL").expect("Database URL must be set in env");
 
     PgPoolOptions::new()
-        .max_connections(100)
+        .max_connections(150)
         .min_connections(5)
         .acquire_timeout(Duration::from_secs(5))
         .idle_timeout(Duration::from_secs(600))

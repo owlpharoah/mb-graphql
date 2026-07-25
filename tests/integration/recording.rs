@@ -1,7 +1,7 @@
-use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use serde_json::json;
 
-const FIVE_OH_FIVE: &str = "8dee0224-bcf9-4023-a805-9562bafd3450";
-const CORNERSTONE: &str = "cea6f31e-bc36-41e6-b37c-c2a6cdfe166a";
+use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use crate::queries::{mbids, recording};
 
 #[tokio::test]
 async fn recording_by_mbid_returns_recording() {
@@ -9,22 +9,15 @@ async fn recording_by_mbid_returns_recording() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                recording(mbid: ["{FIVE_OH_FIVE}"]) {{
-                    mbid
-                    name
-                    video
-                }}
-            }}"#
-        ),
+        recording::RECORDING_BASIC,
+        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
     )
     .await;
 
     let recordings = data["recording"].as_array().unwrap();
     assert_eq!(recordings.len(), 1);
 
-    let five_oh_five = find_by_mbid(recordings, FIVE_OH_FIVE);
+    let five_oh_five = find_by_mbid(recordings, mbids::FIVE_OH_FIVE);
     assert_eq!(five_oh_five["name"], "505");
 }
 
@@ -34,21 +27,18 @@ async fn recording_by_multiple_mbids_returns_each() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                recording(mbid: ["{FIVE_OH_FIVE}", "{CORNERSTONE}"]) {{
-                    mbid
-                    name
-                }}
-            }}"#
-        ),
+        recording::RECORDING_BATCH,
+        json!({ "mbid": [mbids::FIVE_OH_FIVE, mbids::CORNERSTONE] }),
     )
     .await;
 
     let recordings = data["recording"].as_array().unwrap();
     assert_eq!(recordings.len(), 2);
-    assert_eq!(find_by_mbid(recordings, FIVE_OH_FIVE)["name"], "505");
-    assert_eq!(find_by_mbid(recordings, CORNERSTONE)["name"], "Cornerstone");
+    assert_eq!(find_by_mbid(recordings, mbids::FIVE_OH_FIVE)["name"], "505");
+    assert_eq!(
+        find_by_mbid(recordings, mbids::CORNERSTONE)["name"],
+        "Cornerstone"
+    );
 }
 
 #[tokio::test]
@@ -57,14 +47,8 @@ async fn recording_releases_are_loaded() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                recording(mbid: ["{FIVE_OH_FIVE}"]) {{
-                    name
-                    release {{ name }}
-                }}
-            }}"#
-        ),
+        recording::RECORDING_WITH_RELEASES,
+        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
     )
     .await;
 
@@ -78,19 +62,8 @@ async fn recording_secondary_fields_resolve_without_error() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                recording(mbid: ["{FIVE_OH_FIVE}"]) {{
-                    name
-                    firstReleaseDate {{ year month day }}
-                    isrc
-                    rating {{ value votesCount }}
-                    genres {{ name }}
-                    annotation
-                    alias {{ name }}
-                }}
-            }}"#
-        ),
+        recording::RECORDING_SECONDARY_FIELDS,
+        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
     )
     .await;
 
@@ -107,13 +80,8 @@ async fn recording_artist_credit_returns_artist() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                recording(mbid: ["{FIVE_OH_FIVE}"]) {{
-                    artistCredit {{ name artist {{ name }} }}
-                }}
-            }}"#
-        ),
+        recording::RECORDING_ARTIST_CREDIT,
+        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
     )
     .await;
 
@@ -129,7 +97,8 @@ async fn unknown_recording_mbid_returns_empty_list() {
 
     let data = run(
         &schema,
-        r#"{ recording(mbid: ["8dee0224-bcf9-4023-a805-9562bafd3451"]) { name } }"#,
+        recording::RECORDING_NAME_ONLY,
+        json!({ "mbid": ["8dee0224-bcf9-4023-a805-9562bafd3451"] }),
     )
     .await;
 
@@ -140,5 +109,10 @@ async fn unknown_recording_mbid_returns_empty_list() {
 async fn invalid_recording_uuid_returns_error() {
     let schema = test_schema().await;
 
-    run_expect_error(&schema, r#"{ recording(mbid: ["not-a-uuid"]) { name } }"#).await;
+    run_expect_error(
+        &schema,
+        recording::RECORDING_NAME_ONLY,
+        json!({ "mbid": ["not-a-uuid"] }),
+    )
+    .await;
 }

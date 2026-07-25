@@ -35,7 +35,7 @@ use crate::graphql::loaders::rating_artist::ArtistRatingLoader;
 use crate::graphql::loaders::rating_label::LabelRatingLoader;
 use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
 use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
-use crate::graphql::loaders::recording_isrc::{self, RecordingISRCLoader};
+use crate::graphql::loaders::recording_isrc::RecordingISRCLoader;
 use crate::graphql::loaders::relationship::area_id_by_area_mbid::AreaIDByMBIDLoader;
 use crate::graphql::loaders::relationship::area_id_by_artist::{
     AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
@@ -235,7 +235,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let isrc_recording = DataLoader::new(RecordingISRCLoader { pool: pool.clone() }, tokio::spawn);
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(10)
-        .limit_complexity(1500)
+        .limit_complexity(2500)
         .data(pool)
         .data(rg_entity_loader)
         .data(r_entity_loader)

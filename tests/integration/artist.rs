@@ -1,9 +1,7 @@
-use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use serde_json::json;
 
-const YE: &str = "164f0d73-1234-4e2c-8743-d77bf2191051";
-const KIM_KARDASHIAN: &str = "b13c7b85-86bf-41d0-baa7-444f03ec0b38";
-const ARCTIC_MONKEYS: &str = "ada7a83c-e3e1-40f1-93f9-3e73dbc9298a";
-const EMINEM: &str = "b95ce3ff-3d05-4e87-9e01-c97b66af13d4";
+use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use crate::queries::{artist, mbids};
 
 #[tokio::test]
 async fn artist_by_mbid_returns_artist() {
@@ -11,24 +9,15 @@ async fn artist_by_mbid_returns_artist() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                artist(mbid: ["{YE}"]) {{
-                    mbid
-                    name
-                    gender
-                    ended
-                    beginDate {{ year month day }}
-                }}
-            }}"#
-        ),
+        artist::ARTIST_BASIC,
+        json!({ "mbid": [mbids::YE] }),
     )
     .await;
 
     let artists = data["artist"].as_array().unwrap();
     assert_eq!(artists.len(), 1);
 
-    let ye = find_by_mbid(artists, YE);
+    let ye = find_by_mbid(artists, mbids::YE);
     assert_eq!(ye["name"], "Ye");
     assert_eq!(ye["gender"], 1);
     assert_eq!(ye["ended"], false);
@@ -41,27 +30,20 @@ async fn artist_by_multiple_mbids_returns_each_artist() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                artist(mbid: ["{YE}", "{KIM_KARDASHIAN}"]) {{
-                    mbid
-                    name
-                    gender
-                }}
-            }}"#
-        ),
+        artist::ARTIST_BATCH,
+        json!({ "mbid": [mbids::YE, mbids::KIM_KARDASHIAN] }),
     )
     .await;
 
     let artists = data["artist"].as_array().unwrap();
     assert_eq!(artists.len(), 2);
 
-    assert_eq!(find_by_mbid(artists, YE)["name"], "Ye");
+    assert_eq!(find_by_mbid(artists, mbids::YE)["name"], "Ye");
     assert_eq!(
-        find_by_mbid(artists, KIM_KARDASHIAN)["name"],
+        find_by_mbid(artists, mbids::KIM_KARDASHIAN)["name"],
         "Kim Kardashian"
     );
-    assert_eq!(find_by_mbid(artists, KIM_KARDASHIAN)["gender"], 2);
+    assert_eq!(find_by_mbid(artists, mbids::KIM_KARDASHIAN)["gender"], 2);
 }
 
 #[tokio::test]
@@ -70,21 +52,8 @@ async fn artist_release_groups_and_releases_are_loaded() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                artist(mbid: ["{ARCTIC_MONKEYS}"]) {{
-                    name
-                    releaseGroups {{
-                        name
-                        type
-                        firstReleaseDate {{ year month day }}
-                    }}
-                    releases {{
-                        name
-                    }}
-                }}
-            }}"#
-        ),
+        artist::ARTIST_RELEASE_GROUPS_AND_RELEASES,
+        json!({ "mbid": [mbids::ARCTIC_MONKEYS] }),
     )
     .await;
 
@@ -105,23 +74,8 @@ async fn artist_secondary_fields_resolve_without_error() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                artist(mbid: ["{ARCTIC_MONKEYS}"]) {{
-                    name
-                    tags {{ name count }}
-                    genres {{ mbid name }}
-                    rating {{ value votesCount }}
-                    annotation
-                    area {{ name }}
-                    beginArea {{ name }}
-                    endArea {{ name }}
-                    alias {{ name sortName type primary }}
-                    ipis
-                    isnis
-                }}
-            }}"#
-        ),
+        artist::ARTIST_SECONDARY_FIELDS,
+        json!({ "mbid": [mbids::ARCTIC_MONKEYS] }),
     )
     .await;
 
@@ -141,15 +95,8 @@ async fn artist_by_multiple_mbids_release_groups_are_loaded_for_each() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                artist(mbid: ["{ARCTIC_MONKEYS}", "{EMINEM}"]) {{
-                    mbid
-                    name
-                    releaseGroups {{ name }}
-                }}
-            }}"#
-        ),
+        artist::ARTIST_BATCH_WITH_RELEASE_GROUPS,
+        json!({ "mbid": [mbids::ARCTIC_MONKEYS, mbids::EMINEM] }),
     )
     .await;
 
@@ -157,13 +104,13 @@ async fn artist_by_multiple_mbids_release_groups_are_loaded_for_each() {
     assert_eq!(artists.len(), 2);
 
     assert!(
-        !find_by_mbid(artists, ARCTIC_MONKEYS)["releaseGroups"]
+        !find_by_mbid(artists, mbids::ARCTIC_MONKEYS)["releaseGroups"]
             .as_array()
             .unwrap()
             .is_empty()
     );
     assert!(
-        !find_by_mbid(artists, EMINEM)["releaseGroups"]
+        !find_by_mbid(artists, mbids::EMINEM)["releaseGroups"]
             .as_array()
             .unwrap()
             .is_empty()
@@ -176,7 +123,8 @@ async fn unknown_artist_mbid_returns_empty_list() {
 
     let data = run(
         &schema,
-        r#"{ artist(mbid: ["5441c29d-3602-4898-b1a1-b77fa23b8e51"]) { name } }"#,
+        artist::ARTIST_NAME_ONLY,
+        json!({ "mbid": ["5441c29d-3602-4898-b1a1-b77fa23b8e51"] }),
     )
     .await;
 
@@ -189,16 +137,11 @@ async fn unknown_artist_mbids_returns_empty_list() {
 
     let data = run(
         &schema,
-        r#"{
-            artist(
-                mbid: [
-                    "f3bf61f8-97d4-4e52-a73d-2ddbbe8196e8",
-                    "c95ce3ff-3d05-4e87-9e01-c97b66af13d4"
-                ]
-            ) {
-                name
-            }
-        }"#,
+        artist::ARTIST_NAME_ONLY,
+        json!({ "mbid": [
+            "f3bf61f8-97d4-4e52-a73d-2ddbbe8196e8",
+            "c95ce3ff-3d05-4e87-9e01-c97b66af13d4"
+        ] }),
     )
     .await;
 
@@ -209,7 +152,12 @@ async fn unknown_artist_mbids_returns_empty_list() {
 async fn invalid_artist_uuid_returns_error() {
     let schema = test_schema().await;
 
-    run_expect_error(&schema, r#"{ artist(mbid: ["not-a-uuid"]) { name } }"#).await;
+    run_expect_error(
+        &schema,
+        artist::ARTIST_NAME_ONLY,
+        json!({ "mbid": ["not-a-uuid"] }),
+    )
+    .await;
 }
 
 #[tokio::test]
@@ -218,7 +166,8 @@ async fn mixed_valid_and_invalid_artist_uuid_returns_error() {
 
     run_expect_error(
         &schema,
-        &format!(r#"{{ artist(mbid: ["{YE}", "not-a-uuid"]) {{ name }} }}"#),
+        artist::ARTIST_NAME_ONLY,
+        json!({ "mbid": [mbids::YE, "not-a-uuid"] }),
     )
     .await;
 }

@@ -1,8 +1,7 @@
-use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use serde_json::json;
 
-const FAVOURITE_WORST_NIGHTMARE_RELEASE: &str = "f68c985d-f18b-4f4a-b7f0-87837cf3fbf9";
-const FAVOURITE_WORST_NIGHTMARE_RELEASE_GROUP: &str = "f113fa38-7908-3ec9-8145-d2455e78a8b2";
-const HUMBUG_RELEASE: &str = "a681034b-b886-4df9-aff2-f47efcf96f2f";
+use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use crate::queries::{mbids, release};
 
 #[tokio::test]
 async fn release_by_mbid_returns_release() {
@@ -10,27 +9,19 @@ async fn release_by_mbid_returns_release() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                release(mbid: ["{FAVOURITE_WORST_NIGHTMARE_RELEASE}"]) {{
-                    mbid
-                    name
-                    releaseGroup {{ mbid name }}
-                    labelInfo {{ catalogNumber label {{ name }} }}
-                }}
-            }}"#
-        ),
+        release::RELEASE_BASIC,
+        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RELEASE] }),
     )
     .await;
 
     let releases = data["release"].as_array().unwrap();
     assert_eq!(releases.len(), 1);
 
-    let fwn = find_by_mbid(releases, FAVOURITE_WORST_NIGHTMARE_RELEASE);
+    let fwn = find_by_mbid(releases, mbids::FAVOURITE_WORST_NIGHTMARE_RELEASE);
     assert_eq!(fwn["name"], "Favourite Worst Nightmare");
     assert_eq!(
         fwn["releaseGroup"]["mbid"],
-        FAVOURITE_WORST_NIGHTMARE_RELEASE_GROUP
+        mbids::FAVOURITE_WORST_NIGHTMARE_RG
     );
 
     let label_info = fwn["labelInfo"].as_array().unwrap();
@@ -48,22 +39,15 @@ async fn release_by_multiple_mbids_returns_each() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                release(mbid: ["{FAVOURITE_WORST_NIGHTMARE_RELEASE}", "{HUMBUG_RELEASE}"]) {{
-                    mbid
-                    name
-                    labelInfo {{ catalogNumber }}
-                }}
-            }}"#
-        ),
+        release::RELEASE_BATCH,
+        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RELEASE, mbids::HUMBUG_RELEASE] }),
     )
     .await;
 
     let releases = data["release"].as_array().unwrap();
     assert_eq!(releases.len(), 2);
 
-    let humbug = find_by_mbid(releases, HUMBUG_RELEASE);
+    let humbug = find_by_mbid(releases, mbids::HUMBUG_RELEASE);
     assert_eq!(humbug["name"], "Humbug");
     assert!(
         humbug["labelInfo"]
@@ -80,18 +64,8 @@ async fn release_medium_is_loaded() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                release(mbid: ["{FAVOURITE_WORST_NIGHTMARE_RELEASE}"]) {{
-                    name
-                    medium {{
-                        name
-                        trackCount
-                        tracks {{ name position }}
-                    }}
-                }}
-            }}"#
-        ),
+        release::RELEASE_WITH_MEDIUM,
+        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RELEASE] }),
     )
     .await;
 
@@ -107,21 +81,8 @@ async fn release_secondary_fields_resolve_without_error() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                release(mbid: ["{FAVOURITE_WORST_NIGHTMARE_RELEASE}"]) {{
-                    name
-                    date {{ year month day }}
-                    asin
-                    country
-                    releaseEvents {{ date {{ year }} country }}
-                    artistCredit {{ name artist {{ name }} }}
-                    genres {{ name }}
-                    annotation
-                    alias {{ name }}
-                }}
-            }}"#
-        ),
+        release::RELEASE_SECONDARY_FIELDS,
+        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RELEASE] }),
     )
     .await;
 
@@ -143,7 +104,8 @@ async fn unknown_release_mbid_returns_empty_list() {
 
     let data = run(
         &schema,
-        r#"{ release(mbid: ["f68c985d-f18b-4f4a-b7f0-87837cf3fbfa"]) { name } }"#,
+        release::RELEASE_NAME_ONLY,
+        json!({ "mbid": ["f68c985d-f18b-4f4a-b7f0-87837cf3fbfa"] }),
     )
     .await;
 
@@ -154,5 +116,10 @@ async fn unknown_release_mbid_returns_empty_list() {
 async fn invalid_release_uuid_returns_error() {
     let schema = test_schema().await;
 
-    run_expect_error(&schema, r#"{ release(mbid: ["not-a-uuid"]) { name } }"#).await;
+    run_expect_error(
+        &schema,
+        release::RELEASE_NAME_ONLY,
+        json!({ "mbid": ["not-a-uuid"] }),
+    )
+    .await;
 }

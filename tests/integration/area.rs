@@ -1,7 +1,7 @@
-use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use serde_json::json;
 
-const UNITED_KINGDOM: &str = "8a754a16-0027-3a29-b6d7-2b40ea0481ed";
-const UNITED_STATES: &str = "489ce91b-6658-3307-9877-795b68554c98";
+use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use crate::queries::{area, mbids};
 
 #[tokio::test]
 async fn area_by_mbid_returns_area() {
@@ -9,23 +9,15 @@ async fn area_by_mbid_returns_area() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                area(mbid: ["{UNITED_KINGDOM}"]) {{
-                    mbid
-                    name
-                    ended
-                    isoCode1
-                }}
-            }}"#
-        ),
+        area::AREA_BASIC,
+        json!({ "mbid": [mbids::UNITED_KINGDOM] }),
     )
     .await;
 
     let areas = data["area"].as_array().unwrap();
     assert_eq!(areas.len(), 1);
 
-    let uk = find_by_mbid(areas, UNITED_KINGDOM);
+    let uk = find_by_mbid(areas, mbids::UNITED_KINGDOM);
     assert_eq!(uk["name"], "United Kingdom");
     assert_eq!(uk["ended"], false);
     assert!(
@@ -43,23 +35,16 @@ async fn area_by_multiple_mbids_returns_each() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                area(mbid: ["{UNITED_KINGDOM}", "{UNITED_STATES}"]) {{
-                    mbid
-                    name
-                    isoCode1
-                }}
-            }}"#
-        ),
+        area::AREA_BATCH,
+        json!({ "mbid": [mbids::UNITED_KINGDOM, mbids::UNITED_STATES] }),
     )
     .await;
 
     let areas = data["area"].as_array().unwrap();
     assert_eq!(areas.len(), 2);
 
-    let uk = find_by_mbid(areas, UNITED_KINGDOM);
-    let us = find_by_mbid(areas, UNITED_STATES);
+    let uk = find_by_mbid(areas, mbids::UNITED_KINGDOM);
+    let us = find_by_mbid(areas, mbids::UNITED_STATES);
     assert!(uk["isoCode1"].as_array().unwrap().iter().any(|c| c == "GB"));
     assert!(us["isoCode1"].as_array().unwrap().iter().any(|c| c == "US"));
 }
@@ -70,21 +55,8 @@ async fn area_secondary_fields_resolve_without_error() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                area(mbid: ["{UNITED_KINGDOM}"]) {{
-                    name
-                    type
-                    beginDate {{ year month day }}
-                    endDate {{ year month day }}
-                    isoCode2
-                    isoCode3
-                    tags {{ name count }}
-                    annotation
-                    alias {{ name }}
-                }}
-            }}"#
-        ),
+        area::AREA_SECONDARY_FIELDS,
+        json!({ "mbid": [mbids::UNITED_KINGDOM] }),
     )
     .await;
 
@@ -101,7 +73,8 @@ async fn unknown_area_mbid_returns_empty_list() {
 
     let data = run(
         &schema,
-        r#"{ area(mbid: ["8a754a16-0027-3a29-b6d7-2b40ea0481ee"]) { name } }"#,
+        area::AREA_NAME_ONLY,
+        json!({ "mbid": ["8a754a16-0027-3a29-b6d7-2b40ea0481ee"] }),
     )
     .await;
 
@@ -112,5 +85,10 @@ async fn unknown_area_mbid_returns_empty_list() {
 async fn invalid_area_uuid_returns_error() {
     let schema = test_schema().await;
 
-    run_expect_error(&schema, r#"{ area(mbid: ["not-a-uuid"]) { name } }"#).await;
+    run_expect_error(
+        &schema,
+        area::AREA_NAME_ONLY,
+        json!({ "mbid": ["not-a-uuid"] }),
+    )
+    .await;
 }

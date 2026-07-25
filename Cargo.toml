@@ -25,3 +25,10 @@ dotenvy = "0.15.7"
 axum = "0.8.9"
 tracing = "0.1.44"
 tracing-subscriber = {version="0.3.23" , features = ["env-filter"]}
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio", "html_reports"] }
+
+[[bench]]
+name = "query_bench"
+harness = false

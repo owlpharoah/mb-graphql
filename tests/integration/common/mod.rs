@@ -1,4 +1,4 @@
-use async_graphql::{Request, ServerError};
+use async_graphql::{Request, ServerError, Variables};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::time::Duration;
 
@@ -27,8 +27,10 @@ pub async fn test_schema() -> AppSchema {
     build_schema(pool)
 }
 
-pub async fn run(schema: &AppSchema, query: &str) -> serde_json::Value {
-    let response = schema.execute(Request::new(query)).await;
+pub async fn run(schema: &AppSchema, query: &str, vars: serde_json::Value) -> serde_json::Value {
+    let variables = Variables::from_json(vars);
+    let request = Request::new(query).variables(variables);
+    let response = schema.execute(request).await;
     assert!(
         response.errors.is_empty(),
         "expected no errors, got: {:#?}",
@@ -40,8 +42,14 @@ pub async fn run(schema: &AppSchema, query: &str) -> serde_json::Value {
         .expect("response data should convert to JSON")
 }
 
-pub async fn run_expect_error(schema: &AppSchema, query: &str) -> Vec<ServerError> {
-    let response = schema.execute(Request::new(query)).await;
+pub async fn run_expect_error(
+    schema: &AppSchema,
+    query: &str,
+    vars: serde_json::Value,
+) -> Vec<ServerError> {
+    let variables = Variables::from_json(vars);
+    let request = Request::new(query).variables(variables);
+    let response = schema.execute(request).await;
     assert!(
         !response.errors.is_empty(),
         "expected the query to fail, but got data: {:#?}",

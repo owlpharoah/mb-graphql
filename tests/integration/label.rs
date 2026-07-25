@@ -1,7 +1,7 @@
-use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use serde_json::json;
 
-const RCA_RECORDS: &str = "1ca5ed29-e00b-4ea5-b817-0bcca0e04946";
-const PARLOPHONE: &str = "df7d1c7f-ef95-425f-8eef-445b3d7bcbd9";
+use crate::common::{find_by_mbid, run, run_expect_error, test_schema};
+use crate::queries::{label, mbids};
 
 #[tokio::test]
 async fn label_by_mbid_returns_label() {
@@ -9,22 +9,15 @@ async fn label_by_mbid_returns_label() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                label(mbid: ["{PARLOPHONE}"]) {{
-                    mbid
-                    name
-                    area {{ name isoCode1 }}
-                }}
-            }}"#
-        ),
+        label::LABEL_BASIC,
+        json!({ "mbid": [mbids::PARLOPHONE] }),
     )
     .await;
 
     let labels = data["label"].as_array().unwrap();
     assert_eq!(labels.len(), 1);
 
-    let parlophone = find_by_mbid(labels, PARLOPHONE);
+    let parlophone = find_by_mbid(labels, mbids::PARLOPHONE);
     assert_eq!(parlophone["name"], "Parlophone");
     assert_eq!(parlophone["area"]["name"], "United Kingdom");
 }
@@ -35,26 +28,19 @@ async fn label_by_multiple_mbids_returns_each() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                label(mbid: ["{RCA_RECORDS}", "{PARLOPHONE}"]) {{
-                    mbid
-                    name
-                    area {{ name }}
-                }}
-            }}"#
-        ),
+        label::LABEL_BATCH,
+        json!({ "mbid": [mbids::RCA_RECORDS, mbids::PARLOPHONE] }),
     )
     .await;
 
     let labels = data["label"].as_array().unwrap();
     assert_eq!(labels.len(), 2);
     assert_eq!(
-        find_by_mbid(labels, RCA_RECORDS)["area"]["name"],
+        find_by_mbid(labels, mbids::RCA_RECORDS)["area"]["name"],
         "United States"
     );
     assert_eq!(
-        find_by_mbid(labels, PARLOPHONE)["area"]["name"],
+        find_by_mbid(labels, mbids::PARLOPHONE)["area"]["name"],
         "United Kingdom"
     );
 }
@@ -65,14 +51,8 @@ async fn label_releases_are_loaded() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                label(mbid: ["{RCA_RECORDS}"]) {{
-                    name
-                    release {{ name }}
-                }}
-            }}"#
-        ),
+        label::LABEL_WITH_RELEASES,
+        json!({ "mbid": [mbids::RCA_RECORDS] }),
     )
     .await;
 
@@ -86,23 +66,8 @@ async fn label_secondary_fields_resolve_without_error() {
 
     let data = run(
         &schema,
-        &format!(
-            r#"{{
-                label(mbid: ["{RCA_RECORDS}"]) {{
-                    name
-                    type
-                    ended
-                    beginDate {{ year month day }}
-                    endDate {{ year month day }}
-                    rating {{ value votesCount }}
-                    genres {{ name }}
-                    annotation
-                    ipis
-                    isnis
-                    alias {{ name }}
-                }}
-            }}"#
-        ),
+        label::LABEL_SECONDARY_FIELDS,
+        json!({ "mbid": [mbids::RCA_RECORDS] }),
     )
     .await;
 
@@ -121,7 +86,8 @@ async fn unknown_label_mbid_returns_empty_list() {
 
     let data = run(
         &schema,
-        r#"{ label(mbid: ["1ca5ed29-e00b-4ea5-b817-0bcca0e04947"]) { name } }"#,
+        label::LABEL_NAME_ONLY,
+        json!({ "mbid": ["1ca5ed29-e00b-4ea5-b817-0bcca0e04947"] }),
     )
     .await;
 
@@ -132,5 +98,10 @@ async fn unknown_label_mbid_returns_empty_list() {
 async fn invalid_label_uuid_returns_error() {
     let schema = test_schema().await;
 
-    run_expect_error(&schema, r#"{ label(mbid: ["not-a-uuid"]) { name } }"#).await;
+    run_expect_error(
+        &schema,
+        label::LABEL_NAME_ONLY,
+        json!({ "mbid": ["not-a-uuid"] }),
+    )
+    .await;
 }
