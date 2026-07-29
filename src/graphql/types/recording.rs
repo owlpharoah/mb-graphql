@@ -87,8 +87,8 @@ impl RecordingQuery {
         let recording_ids: Vec<i32> = ids.values().copied().collect();
         let recordings_map = recording_loader.load_many(recording_ids).await?;
         Ok(ids
-            .into_iter()
-            .filter_map(|(_uuid, id)| recordings_map.get(&id).cloned())
+            .into_values()
+            .filter_map(|id| recordings_map.get(&id).cloned())
             .collect())
     }
 }

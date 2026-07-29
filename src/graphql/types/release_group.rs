@@ -86,8 +86,8 @@ impl ReleaseGroupQuery {
         let release_group_ids: Vec<i32> = ids.values().copied().collect();
         let release_groups_map = release_group_loader.load_many(release_group_ids).await?;
         Ok(ids
-            .into_iter()
-            .filter_map(|(_uuid, id)| release_groups_map.get(&id).cloned())
+            .into_values()
+            .filter_map(|id| release_groups_map.get(&id).cloned())
             .collect())
     }
 }

@@ -92,8 +92,8 @@ impl AreaQuery {
         let area_ids: Vec<i32> = ids.values().copied().collect();
         let areas_map = area_loader.load_many(area_ids).await?;
         Ok(ids
-            .into_iter()
-            .filter_map(|(_uuid, id)| areas_map.get(&id).cloned())
+            .into_values()
+            .filter_map(|id| areas_map.get(&id).cloned())
             .collect())
     }
 }
