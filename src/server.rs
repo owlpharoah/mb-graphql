@@ -16,6 +16,6 @@ pub async fn run(schema: AppSchema) {
     let app = Router::new().route("/graphql", get(graphiql).post_service(GraphQL::new(schema)));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    println!("GraphiQL: http://localhost:8000/graphql");
+    println!("GraphiQL: http://localhost:8080/graphql");
     axum::serve(listener, app).await.unwrap();
 }
