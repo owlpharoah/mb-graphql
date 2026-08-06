@@ -4,6 +4,16 @@ mod common;
 #[path = "../tests/queries/mod.rs"]
 mod queries;
 
+mod integration {
+    pub mod area;
+    pub mod artist;
+    pub mod common;
+    pub mod label;
+    pub mod recording;
+    pub mod release;
+    pub mod release_group;
+}
+
 #[path = "integration/artist.rs"]
 mod artist;
 
