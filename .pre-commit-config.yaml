@@ -1,0 +1,64 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+  - pre-push
+default_stages:
+  - pre-commit
+  - pre-push
+  - manual
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: end-of-file-fixer
+        exclude: fixtures
+      - id: mixed-line-ending
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      # - id: no-commit-to-branch
+      #   args: [ --branch, main ]
+  - repo: https://github.com/FeryET/pre-commit-rust
+    rev: v1.2.1
+    hooks:
+      - id: cargo-check
+        stages:
+        - pre-commit
+        - pre-push
+      - id: clippy
+        stages:
+        - pre-commit
+        - pre-push
+        args: [--all-targets, "--all-features", "--locked"]
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        description: Format files with cargo fmt.
+        entry: cargo fmt
+        language: system
+        types: ["rust"]
+        args: ["--"]
+        stages:
+        - pre-commit
+        - pre-push
+      - id: test
+        name: test
+        description: Run tests with cargo test
+        entry: cargo test
+        language: system
+        types: [file]
+        pass_filenames: false
+        stages: ["pre-push"]
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.36.2
+    hooks:
+      - id: typos

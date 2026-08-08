@@ -9,7 +9,7 @@ use crate::graphql::loaders::relationship::PageKey;
 use crate::graphql::loaders::relationship::artist_credit_id_release::ArtistCreditIdByReleaseLoader;
 use crate::graphql::loaders::relationship::genre_id_by_release::GenreIdsByReleaseLoader;
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
-use crate::graphql::loaders::relationship::release_id_by_realease_mbid::ReleaseIDByMBIDLoader;
+use crate::graphql::loaders::relationship::release_id_by_release_mbid::ReleaseIDByMBIDLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
 use crate::graphql::types::common::{Alias, ArtistCredit, Genre, Medium, ReleaseEvent};
 use crate::graphql::types::{

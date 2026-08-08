@@ -2,34 +2,64 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+  workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  checks: write
 
 env:
   CARGO_TERM_COLOR: always
+  FROM_REF: ${{ github.event.pull_request.base.sha || (!github.event.forced && ( github.event.before != '0000000000000000000000000000000000000000'  && github.event.before || github.sha )) || format('{0}~', github.sha) }}
+  TO_REF: ${{ github.sha }}
 
 jobs:
   check:
-    name: Check, lint, test
+    name: Check, lint
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v6
         with:
-          components: rustfmt, clippy
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt,clippy
+          cache-on-failure: true
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+      - name: Install pre-commit
+        run: python -m pip install pre-commit
+      - run: python -m pip freeze --local
+      - uses: actions/cache@v5
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
-      - uses: Swatinem/rust-cache@v2
+      - run: echo "SQLX_OFFLINE=true" >> $GITHUB_ENV
 
-      - name: Check formatting
-        run: cargo fmt --check
-
-      - name: Clippy
-        run: cargo clippy
-
-      - name: Build
-        run: cargo build
-
+      - name: pre-commit validation
+        run: pre-commit run --show-diff-on-failure --color=always --from-ref ${{ env.FROM_REF }} --to-ref ${{ env.TO_REF }} --hook-stage manual
+      - name: Formatting
+        uses: clechasseur/rs-cargo@v4
+        with:
+          command: fmt
+          args: --check
+      - name: Check
+        uses: clechasseur/rs-cargo@v4
+        with:
+          command: check
+          args: --all-targets --all-features --locked
+      - name: Linting
+        uses: clechasseur/rs-cargo@v4
+        with:
+          command: clippy
+          args: --all-targets --all-features --locked
       - name: Verify SDL is up to date
         run: |
           cargo run --bin export-sdl

@@ -56,9 +56,9 @@ use crate::graphql::loaders::relationship::recording_id_by_recording_mbid::Recor
 use crate::graphql::loaders::relationship::release_group_id_by_artist::ReleaseGroupIdsByArtistLoader;
 use crate::graphql::loaders::relationship::release_id_by_artist::ReleaseIdsByArtistLoader;
 use crate::graphql::loaders::relationship::release_id_by_label::ReleaseIdsByLabelLoader;
-use crate::graphql::loaders::relationship::release_id_by_realease_mbid::ReleaseIDByMBIDLoader;
 use crate::graphql::loaders::relationship::release_id_by_recording::ReleaseIdsByRecordingLoader;
 use crate::graphql::loaders::relationship::release_id_by_release_group::ReleaseIdByReleaseGroupLoader;
+use crate::graphql::loaders::relationship::release_id_by_release_mbid::ReleaseIDByMBIDLoader;
 use crate::graphql::loaders::relationship::rg_id_by_rg_mbid::ReleaseGroupIDByMBIDLoader;
 use crate::graphql::loaders::relationship::tag_id_by_area::TagIdsByAreaLoader;
 use crate::graphql::loaders::relationship::tag_id_by_artist::TagIdsByArtistLoader;
