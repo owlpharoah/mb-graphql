@@ -124,8 +124,8 @@ impl ArtistQuery {
         let artists_map = artist_loader.load_many(artist_ids).await?;
 
         Ok(ids
-            .into_iter()
-            .filter_map(|(_uuid, id)| artists_map.get(&id).cloned())
+            .into_values()
+            .filter_map(|id| artists_map.get(&id).cloned())
             .collect())
     }
 }

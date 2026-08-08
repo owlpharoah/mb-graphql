@@ -105,8 +105,8 @@ impl LabelQuery {
         let label_ids: Vec<i32> = ids.values().copied().collect();
         let labels_map = label_loader.load_many(label_ids).await?;
         Ok(ids
-            .into_iter()
-            .filter_map(|(_uuid, id)| labels_map.get(&id).cloned())
+            .into_values()
+            .filter_map(|id| labels_map.get(&id).cloned())
             .collect())
     }
 }

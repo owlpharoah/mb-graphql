@@ -234,7 +234,7 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
 
     let isrc_recording = DataLoader::new(RecordingISRCLoader { pool: pool.clone() }, tokio::spawn);
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
-        .limit_depth(10)
+        .limit_depth(15)
         .limit_complexity(2500)
         .data(pool)
         .data(rg_entity_loader)

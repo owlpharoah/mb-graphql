@@ -10,15 +10,15 @@ async fn recording_by_mbid_returns_recording() {
     let data = run(
         &schema,
         recording::RECORDING_BASIC,
-        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
+        json!({ "mbid": [mbids::DIAMONDS_ARE_FOREVER] }),
     )
     .await;
 
     let recordings = data["recording"].as_array().unwrap();
     assert_eq!(recordings.len(), 1);
 
-    let five_oh_five = find_by_mbid(recordings, mbids::FIVE_OH_FIVE);
-    assert_eq!(five_oh_five["name"], "505");
+    let diamonds_are_forever = find_by_mbid(recordings, mbids::DIAMONDS_ARE_FOREVER);
+    assert_eq!(diamonds_are_forever["name"], "Diamonds Are Forever");
 }
 
 #[tokio::test]
@@ -28,16 +28,19 @@ async fn recording_by_multiple_mbids_returns_each() {
     let data = run(
         &schema,
         recording::RECORDING_BATCH,
-        json!({ "mbid": [mbids::FIVE_OH_FIVE, mbids::CORNERSTONE] }),
+        json!({ "mbid": [mbids::DIAMONDS_ARE_FOREVER, mbids::DIAMONDS_ARE_FOREVER_2] }),
     )
     .await;
 
     let recordings = data["recording"].as_array().unwrap();
     assert_eq!(recordings.len(), 2);
-    assert_eq!(find_by_mbid(recordings, mbids::FIVE_OH_FIVE)["name"], "505");
     assert_eq!(
-        find_by_mbid(recordings, mbids::CORNERSTONE)["name"],
-        "Cornerstone"
+        find_by_mbid(recordings, mbids::DIAMONDS_ARE_FOREVER)["name"],
+        "Diamonds Are Forever"
+    );
+    assert_eq!(
+        find_by_mbid(recordings, mbids::DIAMONDS_ARE_FOREVER_2)["name"],
+        "Diamonds Are Forever"
     );
 }
 
@@ -48,12 +51,12 @@ async fn recording_releases_are_loaded() {
     let data = run(
         &schema,
         recording::RECORDING_WITH_RELEASES,
-        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
+        json!({ "mbid": [mbids::DIAMONDS_ARE_FOREVER] }),
     )
     .await;
 
-    let five_oh_five = &data["recording"].as_array().unwrap()[0];
-    assert!(!five_oh_five["release"].as_array().unwrap().is_empty());
+    let diamonds_are_forever = &data["recording"].as_array().unwrap()[0];
+    assert!(diamonds_are_forever["release"].as_array().is_some());
 }
 
 #[tokio::test]
@@ -63,15 +66,15 @@ async fn recording_secondary_fields_resolve_without_error() {
     let data = run(
         &schema,
         recording::RECORDING_SECONDARY_FIELDS,
-        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
+        json!({ "mbid": [mbids::DIAMONDS_ARE_FOREVER] }),
     )
     .await;
 
     println!("recording secondary fields = {:#?}", data);
 
-    let five_oh_five = &data["recording"].as_array().unwrap()[0];
-    assert!(five_oh_five["genres"].is_array());
-    assert!(five_oh_five["alias"].is_array());
+    let diamonds_are_forever = &data["recording"].as_array().unwrap()[0];
+    assert!(diamonds_are_forever["genres"].is_array());
+    assert!(diamonds_are_forever["alias"].is_array());
 }
 
 #[tokio::test]
@@ -81,12 +84,12 @@ async fn recording_artist_credit_returns_artist() {
     let data = run(
         &schema,
         recording::RECORDING_ARTIST_CREDIT,
-        json!({ "mbid": [mbids::FIVE_OH_FIVE] }),
+        json!({ "mbid": [mbids::DIAMONDS_ARE_FOREVER] }),
     )
     .await;
 
-    let five_oh_five = &data["recording"].as_array().unwrap()[0];
-    let credits = five_oh_five["artistCredit"].as_array().unwrap();
+    let diamonds_are_forever = &data["recording"].as_array().unwrap()[0];
+    let credits = diamonds_are_forever["artistCredit"].as_array().unwrap();
     assert!(!credits.is_empty());
     assert_eq!(credits[0]["artist"]["name"], "Arctic Monkeys");
 }

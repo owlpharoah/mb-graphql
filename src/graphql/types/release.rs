@@ -99,8 +99,8 @@ impl ReleaseQuery {
         let release_ids: Vec<i32> = ids.values().copied().collect();
         let releases_map = release_loader.load_many(release_ids).await?;
         Ok(ids
-            .into_iter()
-            .filter_map(|(_uuid, id)| releases_map.get(&id).cloned())
+            .into_values()
+            .filter_map(|id| releases_map.get(&id).cloned())
             .collect())
     }
 }

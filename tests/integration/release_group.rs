@@ -32,7 +32,7 @@ async fn release_group_by_multiple_mbids_returns_each() {
     let data = run(
         &schema,
         release_group::RELEASE_GROUP_BATCH,
-        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RG, mbids::HUMBUG_RG] }),
+        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RG, mbids::BLUE_LINES_RG] }),
     )
     .await;
 
@@ -42,7 +42,7 @@ async fn release_group_by_multiple_mbids_returns_each() {
         find_by_mbid(groups, mbids::FAVOURITE_WORST_NIGHTMARE_RG)["name"],
         "Favourite Worst Nightmare"
     );
-    assert_eq!(find_by_mbid(groups, mbids::HUMBUG_RG)["name"], "Humbug");
+    assert_eq!(find_by_mbid(groups, mbids::BLUE_LINES_RG)["name"], "Blue Lines");
 }
 
 #[tokio::test]

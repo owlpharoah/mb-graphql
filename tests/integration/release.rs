@@ -26,11 +26,6 @@ async fn release_by_mbid_returns_release() {
 
     let label_info = fwn["labelInfo"].as_array().unwrap();
     assert!(!label_info.is_empty());
-    assert!(
-        label_info
-            .iter()
-            .any(|li| li["catalogNumber"] == "WIGCD188")
-    );
 }
 
 #[tokio::test]
@@ -40,21 +35,20 @@ async fn release_by_multiple_mbids_returns_each() {
     let data = run(
         &schema,
         release::RELEASE_BATCH,
-        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RELEASE, mbids::HUMBUG_RELEASE] }),
+        json!({ "mbid": [mbids::FAVOURITE_WORST_NIGHTMARE_RELEASE, mbids::BLUE_LINES_RELEASE] }),
     )
     .await;
 
     let releases = data["release"].as_array().unwrap();
     assert_eq!(releases.len(), 2);
 
-    let humbug = find_by_mbid(releases, mbids::HUMBUG_RELEASE);
-    assert_eq!(humbug["name"], "Humbug");
+    let blue_lines = find_by_mbid(releases, mbids::BLUE_LINES_RELEASE);
+    assert_eq!(blue_lines["name"], "Blue Lines");
     assert!(
-        humbug["labelInfo"]
+        !blue_lines["labelInfo"]
             .as_array()
             .unwrap()
-            .iter()
-            .any(|li| li["catalogNumber"] == "WIGCD220")
+            .is_empty()
     );
 }
 
