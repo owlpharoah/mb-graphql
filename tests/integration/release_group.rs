@@ -42,7 +42,10 @@ async fn release_group_by_multiple_mbids_returns_each() {
         find_by_mbid(groups, mbids::FAVOURITE_WORST_NIGHTMARE_RG)["name"],
         "Favourite Worst Nightmare"
     );
-    assert_eq!(find_by_mbid(groups, mbids::BLUE_LINES_RG)["name"], "Blue Lines");
+    assert_eq!(
+        find_by_mbid(groups, mbids::BLUE_LINES_RG)["name"],
+        "Blue Lines"
+    );
 }
 
 #[tokio::test]

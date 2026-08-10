@@ -44,12 +44,7 @@ async fn release_by_multiple_mbids_returns_each() {
 
     let blue_lines = find_by_mbid(releases, mbids::BLUE_LINES_RELEASE);
     assert_eq!(blue_lines["name"], "Blue Lines");
-    assert!(
-        !blue_lines["labelInfo"]
-            .as_array()
-            .unwrap()
-            .is_empty()
-    );
+    assert!(!blue_lines["labelInfo"].as_array().unwrap().is_empty());
 }
 
 #[tokio::test]
