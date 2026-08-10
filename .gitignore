@@ -4,3 +4,4 @@ tracker
 sql_parser.py
 sql.log
 .venv
+schema/docs/
