@@ -122,7 +122,32 @@ RUN <<EOF
     done
 EOF
 
-FROM scratch
+# magidocs
+# ---- Docs (magidoc) ----
+FROM node:22-slim AS docs-builder
+WORKDIR /docs
+COPY schema/magidoc.mjs ./
+COPY schema/schema.graphql ./
+RUN npx --yes @magidoc/cli@latest generate
+
+FROM nginx:alpine AS docs
+COPY --from=docs-builder /docs/docs /usr/share/nginx/html
+RUN <<EOF
+cat > /etc/nginx/conf.d/default.conf <<'CONF'
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri.html $uri/ /index.html;
+    }
+}
+CONF
+EOF
+EXPOSE 80
+
+FROM scratch AS runtime
 
 WORKDIR /
 

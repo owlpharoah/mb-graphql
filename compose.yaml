@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      target: runtime
+    environment:
+      DATABASE_URL: postgres://musicbrainz:musicbrainz@db:5432/musicbrainz_db
+    ports:
+      - "8080:8080"
+    networks:
+      - musicbrainz
+
+  docs:
+    build:
+      context: .
+      target: docs
+    ports:
+      - "8081:80"
+
+networks:
+  musicbrainz:
+    external: true
+    name: musicbrainz-docker_default
