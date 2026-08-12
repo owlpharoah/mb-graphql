@@ -116,7 +116,7 @@ fn bench_queries(c: &mut Criterion) {
             run_query(
                 &schema,
                 artist::ARTIST_BATCH,
-                json!({ "mbid": [mbids::YE, mbids::ARCTIC_MONKEYS, mbids::EMINEM] }),
+                json!({ "mbid": [mbids::YE, mbids::ARCTIC_MONKEYS] }),
             )
         })
     });
