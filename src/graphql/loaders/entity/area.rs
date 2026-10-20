@@ -25,7 +25,6 @@ impl Loader<i32> for AreaLoader {
                 gid,
                 name,
                 comment,
-                type AS area_type,
                 ended,
                 begin_date_year,
                 begin_date_month,
@@ -49,7 +48,6 @@ impl Loader<i32> for AreaLoader {
                     Area {
                         mbid: row.gid,
                         name: row.name,
-                        area_type: row.area_type,
                         disambiguation: row.comment,
                         ended: row.ended,
                         begin_date: PartialDate::from_parts(

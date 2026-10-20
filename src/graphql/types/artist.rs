@@ -13,9 +13,10 @@ use crate::graphql::{
             area::AreaLoader, artist::ArtistLoader, genre::GenreLoader, release::ReleaseLoader,
             release_group::ReleaseGroupLoader, tag::TagLoader,
         },
+        gender_type_by_artist::GenderTypeLoader,
         rating_artist::ArtistRatingLoader,
-        relationship::PageKey,
         relationship::{
+            PageKey,
             area_id_by_artist::{
                 AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
             },
@@ -25,6 +26,7 @@ use crate::graphql::{
             release_id_by_artist::ReleaseIdsByArtistLoader,
             tag_id_by_artist::TagIdsByArtistLoader,
         },
+        type_by_artist::ArtistTypeLoader,
     },
     types::{
         self,
@@ -42,9 +44,6 @@ pub struct ArtistRow {
     pub name: String,
     pub sort_name: String,
     pub comment: Option<String>,
-    #[sqlx(rename = "type")]
-    pub artist_type: Option<i32>,
-    pub gender: Option<i32>,
     pub ended: bool,
     pub begin_date_year: Option<i16>,
     pub begin_date_month: Option<i16>,
@@ -62,9 +61,6 @@ pub struct Artist {
     #[graphql(name = "sortName")]
     pub sort_name: String,
     pub disambiguation: Option<String>,
-    #[graphql(name = "type")]
-    pub artist_type: Option<i32>,
-    pub gender: Option<i32>,
     pub ended: bool,
     #[graphql(name = "beginDate")]
     pub begin_date: Option<PartialDate>,
@@ -82,8 +78,6 @@ impl From<ArtistRow> for Artist {
             name: r.name,
             sort_name: r.sort_name,
             disambiguation: r.comment,
-            artist_type: r.artist_type,
-            gender: r.gender,
             ended: r.ended,
             begin_date: PartialDate::from_parts(
                 r.begin_date_year,
@@ -132,6 +126,17 @@ impl ArtistQuery {
 
 #[ComplexObject]
 impl Artist {
+    async fn r#type(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<ArtistTypeLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+    async fn gender(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<GenderTypeLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+
     #[graphql(complexity = "first as usize * child_complexity")]
     async fn release_groups(
         &self,

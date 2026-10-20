@@ -28,7 +28,6 @@ impl Loader<i32> for LabelLoader {
                 end_date_year,
                 end_date_month,
                 end_date_day,
-                type AS label_type,
                 comment,
                 ended,
                 label_code
@@ -61,7 +60,6 @@ impl Loader<i32> for LabelLoader {
                             row.end_date_day,
                         ),
                         id: row.id,
-                        label_type: row.label_type,
                     },
                 )
             })

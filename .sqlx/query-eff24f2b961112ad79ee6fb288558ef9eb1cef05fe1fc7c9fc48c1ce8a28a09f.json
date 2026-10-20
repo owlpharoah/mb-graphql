@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT r.id AS release, rp.name AS type_name\n            FROM release r\n            JOIN release_packaging rp ON rp.id = r.packaging\n            WHERE r.id = ANY($1)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "release",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "type_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "eff24f2b961112ad79ee6fb288558ef9eb1cef05fe1fc7c9fc48c1ce8a28a09f"
+}

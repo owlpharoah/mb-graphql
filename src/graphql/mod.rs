@@ -25,17 +25,22 @@ use crate::graphql::loaders::entity::release::ReleaseLoader;
 use crate::graphql::loaders::entity::release_group::ReleaseGroupLoader;
 use crate::graphql::loaders::entity::tag::TagLoader;
 use crate::graphql::loaders::entity::tracks::TrackLoader;
+use crate::graphql::loaders::gender_type_by_artist::GenderTypeLoader;
 use crate::graphql::loaders::iso_code_1_by_area::IsoCode1ByAreaLoader;
 use crate::graphql::loaders::iso_code_2_by_area::IsoCode2ByAreaLoader;
 use crate::graphql::loaders::iso_code_3_by_area::IsoCode3ByAreaLoader;
 use crate::graphql::loaders::label_infos_by_release::LabelInfosByReleaseLoader;
 use crate::graphql::loaders::label_ipi::LabelIpiLoader;
 use crate::graphql::loaders::label_isni::LabelIsniLoader;
+use crate::graphql::loaders::medium_format_by_medium::MediumFormatLoader;
 use crate::graphql::loaders::rating_artist::ArtistRatingLoader;
 use crate::graphql::loaders::rating_label::LabelRatingLoader;
 use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
 use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
 use crate::graphql::loaders::recording_isrc::RecordingISRCLoader;
+use crate::graphql::loaders::release_group_type_by_release_group::ReleaseGroupTypeLoader;
+use crate::graphql::loaders::release_packaging_by_release::ReleasePackagingLoader;
+use crate::graphql::loaders::release_status_by_release::ReleaseStatusLoader;
 use crate::graphql::loaders::relationship::area_id_by_area_mbid::AreaIDByMBIDLoader;
 use crate::graphql::loaders::relationship::area_id_by_artist::{
     AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
@@ -68,6 +73,9 @@ use crate::graphql::loaders::relationship::tag_id_by_release::TagIdsByReleaseLoa
 use crate::graphql::loaders::relationship::tag_id_by_release_group::TagIdsByReleaseGroupLoader;
 use crate::graphql::loaders::relationship::track_id_by_medium::TrackIdByMediumLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
+use crate::graphql::loaders::type_by_area::AreaTypeLoader;
+use crate::graphql::loaders::type_by_artist::ArtistTypeLoader;
+use crate::graphql::loaders::type_by_label::LabelTypeLoader;
 use crate::graphql::query::QueryRoot;
 
 pub type AppSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
@@ -233,6 +241,16 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let isni_label = DataLoader::new(LabelIsniLoader { pool: pool.clone() }, tokio::spawn);
 
     let isrc_recording = DataLoader::new(RecordingISRCLoader { pool: pool.clone() }, tokio::spawn);
+
+    let area_type = DataLoader::new(AreaTypeLoader { pool: pool.clone() }, tokio::spawn);
+    let artist_type = DataLoader::new(ArtistTypeLoader { pool: pool.clone() }, tokio::spawn);
+    let gender_type = DataLoader::new(GenderTypeLoader { pool: pool.clone() }, tokio::spawn);
+    let label_type = DataLoader::new(LabelTypeLoader { pool: pool.clone() }, tokio::spawn);
+    let release_status = DataLoader::new(ReleaseStatusLoader { pool: pool.clone() }, tokio::spawn);
+    let release_packaging = DataLoader::new(ReleasePackagingLoader { pool: pool.clone() }, tokio::spawn);
+    let release_group_type = DataLoader::new(ReleaseGroupTypeLoader { pool: pool.clone() }, tokio::spawn);
+    let medium_format = DataLoader::new(MediumFormatLoader { pool: pool.clone() }, tokio::spawn);
+
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)
         .limit_depth(15)
         .limit_complexity(2500)
@@ -305,6 +323,14 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
         .data(release_mbid_id_loader)
         .data(recording_mbid_id_loader)
         .data(isrc_recording)
+        .data(area_type)
+        .data(artist_type)
+        .data(gender_type)
+        .data(label_type)
+        .data(release_status)
+        .data(release_packaging)
+        .data(release_group_type)
+        .data(medium_format)
         .finish()
 }
 

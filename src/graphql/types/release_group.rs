@@ -14,6 +14,7 @@ use crate::graphql::{
             release_group::ReleaseGroupLoader,
         },
         rating_release_group::ReleaseGroupRatingLoader,
+        release_group_type_by_release_group::ReleaseGroupTypeLoader,
         relationship::{
             artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader,
             genre_id_by_release_group::GenreIdsByReleaseGroupLoader,
@@ -230,6 +231,11 @@ impl ReleaseGroup {
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(rg_id = self.id, "ReleaseGroup.aliases resolver called");
         let loader = ctx.data::<DataLoader<ReleaseGroupAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+
+    async fn r#type(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<ReleaseGroupTypeLoader>>()?;
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                id,\n                gid,\n                name,\n                comment,\n                type AS area_type,\n                ended,\n                begin_date_year,\n                begin_date_month,\n                begin_date_day,\n                end_date_year,\n                end_date_month,\n                end_date_day\n            FROM area\n            WHERE id = ANY($1);",
+  "query": "SELECT\n                id,\n                gid,\n                name,\n                begin_date_year,\n                begin_date_month,\n                begin_date_day,\n                end_date_year,\n                end_date_month,\n                end_date_day,\n                comment,\n                ended,\n                label_code\n            FROM label\n            WHERE id = ANY($1)",
   "describe": {
     "columns": [
       {
@@ -20,48 +20,48 @@
       },
       {
         "ordinal": 3,
-        "name": "comment",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 4,
-        "name": "area_type",
-        "type_info": "Int4"
-      },
-      {
-        "ordinal": 5,
-        "name": "ended",
-        "type_info": "Bool"
-      },
-      {
-        "ordinal": 6,
         "name": "begin_date_year",
         "type_info": "Int2"
       },
       {
-        "ordinal": 7,
+        "ordinal": 4,
         "name": "begin_date_month",
         "type_info": "Int2"
       },
       {
-        "ordinal": 8,
+        "ordinal": 5,
         "name": "begin_date_day",
         "type_info": "Int2"
       },
       {
-        "ordinal": 9,
+        "ordinal": 6,
         "name": "end_date_year",
         "type_info": "Int2"
       },
       {
-        "ordinal": 10,
+        "ordinal": 7,
         "name": "end_date_month",
         "type_info": "Int2"
       },
       {
-        "ordinal": 11,
+        "ordinal": 8,
         "name": "end_date_day",
         "type_info": "Int2"
+      },
+      {
+        "ordinal": 9,
+        "name": "comment",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "ended",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 11,
+        "name": "label_code",
+        "type_info": "Int4"
       }
     ],
     "parameters": {
@@ -73,16 +73,16 @@
       false,
       false,
       false,
-      false,
+      true,
+      true,
+      true,
+      true,
+      true,
       true,
       false,
-      true,
-      true,
-      true,
-      true,
-      true,
+      false,
       true
     ]
   },
-  "hash": "c22cb90ce36384827e83fc33b79a364d25986a67df9a4a9222e854450f8f02dd"
+  "hash": "57dd40716a7be0c64eb9c0cc998f2abf1c5de7fe4d9bd7ffe32465447a75c293"
 }

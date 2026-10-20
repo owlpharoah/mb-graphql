@@ -9,6 +9,7 @@ use crate::graphql::{
         relationship::{
             area_id_by_area_mbid::AreaIDByMBIDLoader, tag_id_by_area::TagIdsByAreaLoader,
         },
+        type_by_area::AreaTypeLoader,
     },
     types::common::{Alias, PartialDate, Tag},
 };
@@ -24,8 +25,6 @@ pub struct AreaRow {
     pub gid: Uuid,
     pub name: String,
     pub comment: Option<String>,
-    #[sqlx(rename = "type")]
-    pub area_type: Option<i32>,
     pub ended: bool,
     pub begin_date_year: Option<i16>,
     pub begin_date_month: Option<i16>,
@@ -41,8 +40,6 @@ pub struct Area {
     pub mbid: Uuid,
     pub name: String,
     pub disambiguation: Option<String>,
-    #[graphql(name = "type")]
-    pub area_type: Option<i32>,
     pub ended: bool,
     #[graphql(name = "beginDate")]
     pub begin_date: Option<PartialDate>,
@@ -58,7 +55,6 @@ impl From<AreaRow> for Area {
         Self {
             mbid: r.gid,
             name: r.name,
-            area_type: r.area_type,
             disambiguation: r.comment,
             ended: r.ended,
             begin_date: PartialDate::from_parts(
@@ -100,6 +96,11 @@ impl AreaQuery {
 
 #[ComplexObject]
 impl Area {
+    async fn r#type(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<AreaTypeLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
     async fn iso_code_1(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<String>> {
         let loader = ctx.data::<DataLoader<IsoCode1ByAreaLoader>>()?;
 

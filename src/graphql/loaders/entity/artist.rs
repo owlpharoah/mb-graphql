@@ -19,7 +19,7 @@ impl Loader<i32> for ArtistLoader {
         info!(count = ids.len(), "ArtistLoader batch load");
         let rows = sqlx::query_as!(
             ArtistRow,
-            r#"SELECT id, gid, name, sort_name, comment,type AS artist_type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day FROM artist WHERE id = ANY($1)"#,
+            r#"SELECT id, gid, name, sort_name, comment, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day FROM artist WHERE id = ANY($1)"#,
             ids
         )
         .fetch_all(&self.pool)
@@ -36,8 +36,6 @@ impl Loader<i32> for ArtistLoader {
                         name: row.name,
                         sort_name: row.sort_name,
                         disambiguation: row.comment,
-                        artist_type: row.artist_type,
-                        gender: row.gender,
                         ended: row.ended,
                         begin_date: PartialDate::from_parts(
                             row.begin_date_year,

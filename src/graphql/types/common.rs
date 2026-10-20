@@ -8,6 +8,7 @@ use crate::graphql::{
             artist::ArtistLoader, artist_credit::ArtistCreditLoader, label::LabelLoader,
             recording::RecordingLoader, tracks::TrackLoader,
         },
+        medium_format_by_medium::MediumFormatLoader,
         relationship::{PageKey, track_id_by_medium::TrackIdByMediumLoader},
     },
     types::{artist::Artist, label::Label, recording::Recording},
@@ -111,7 +112,6 @@ pub struct Track {
 #[graphql(complex)]
 pub struct Medium {
     pub mbid: Uuid,
-    pub format: Option<i32>,
     pub position: i32,
     pub name: String,
     #[graphql(name = "trackCount")]
@@ -174,6 +174,11 @@ impl Medium {
             .into_iter()
             .filter_map(|id| tracks_map.get(&id).cloned())
             .collect())
+    }
+
+    async fn format(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<MediumFormatLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }
 

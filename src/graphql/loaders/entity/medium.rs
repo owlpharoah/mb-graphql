@@ -16,7 +16,6 @@ pub struct MediumRow {
     name: String,
     release: i32,
     position: i32,
-    format: Option<i32>,
     track_count: i32,
 }
 
@@ -33,7 +32,6 @@ impl Loader<i32> for MediumLoader {
                 name,
                 release,
                 position,
-                format,
                 track_count
             FROM medium
             WHERE id = ANY($1)"#,
@@ -51,7 +49,6 @@ impl Loader<i32> for MediumLoader {
                     Medium {
                         mbid: row.gid,
                         name: row.name,
-                        format: row.format,
                         position: row.position,
                         track_count: row.track_count,
                         id: row.id,

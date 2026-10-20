@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, gid, name, sort_name, comment,type AS artist_type, gender, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day FROM artist WHERE id = ANY($1)",
+  "query": "SELECT id, gid, name, sort_name, comment, ended, begin_date_year, begin_date_month, begin_date_day, end_date_year, end_date_month, end_date_day FROM artist WHERE id = ANY($1)",
   "describe": {
     "columns": [
       {
@@ -30,46 +30,36 @@
       },
       {
         "ordinal": 5,
-        "name": "artist_type",
-        "type_info": "Int4"
-      },
-      {
-        "ordinal": 6,
-        "name": "gender",
-        "type_info": "Int4"
-      },
-      {
-        "ordinal": 7,
         "name": "ended",
         "type_info": "Bool"
       },
       {
-        "ordinal": 8,
+        "ordinal": 6,
         "name": "begin_date_year",
         "type_info": "Int2"
       },
       {
-        "ordinal": 9,
+        "ordinal": 7,
         "name": "begin_date_month",
         "type_info": "Int2"
       },
       {
-        "ordinal": 10,
+        "ordinal": 8,
         "name": "begin_date_day",
         "type_info": "Int2"
       },
       {
-        "ordinal": 11,
+        "ordinal": 9,
         "name": "end_date_year",
         "type_info": "Int2"
       },
       {
-        "ordinal": 12,
+        "ordinal": 10,
         "name": "end_date_month",
         "type_info": "Int2"
       },
       {
-        "ordinal": 13,
+        "ordinal": 11,
         "name": "end_date_day",
         "type_info": "Int2"
       }
@@ -85,8 +75,6 @@
       false,
       false,
       false,
-      true,
-      true,
       false,
       true,
       true,
@@ -96,5 +84,5 @@
       true
     ]
   },
-  "hash": "d9079efb0a05618c21200f913623648d88a530bf9b1c39558adda8f3366ab955"
+  "hash": "8b41a8bc4d00df663409d0775e79c64e711d2b839dc8345ce77bea3d27ad4c3c"
 }

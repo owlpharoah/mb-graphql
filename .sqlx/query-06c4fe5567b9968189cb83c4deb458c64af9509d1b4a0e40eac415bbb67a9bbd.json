@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT m.id AS medium, mf.name AS type_name\n            FROM medium m\n            JOIN medium_format mf ON mf.id = m.format\n            WHERE m.id = ANY($1)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "medium",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "type_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "06c4fe5567b9968189cb83c4deb458c64af9509d1b4a0e40eac415bbb67a9bbd"
+}

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT l.id AS label, lt.name AS type_name\n            FROM label l\n            JOIN label_type lt ON lt.id = l.type\n            WHERE l.id = ANY($1)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "label",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "type_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "93646588f6544be1c2de1be4f0cbcfdf267b1ced831fbd4f6f15924f3bd892f2"
+}

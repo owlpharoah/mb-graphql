@@ -11,6 +11,8 @@ use crate::graphql::loaders::relationship::genre_id_by_release::GenreIdsByReleas
 use crate::graphql::loaders::relationship::medium_id_by_release::MediumIdByReleaseLoader;
 use crate::graphql::loaders::relationship::release_id_by_release_mbid::ReleaseIDByMBIDLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
+use crate::graphql::loaders::release_packaging_by_release::ReleasePackagingLoader;
+use crate::graphql::loaders::release_status_by_release::ReleaseStatusLoader;
 use crate::graphql::types::common::{Alias, ArtistCredit, Genre, Medium, ReleaseEvent};
 use crate::graphql::types::{
     self,
@@ -30,8 +32,6 @@ pub struct ReleaseRow {
     pub gid: Uuid,
     pub name: String,
     pub release_group: i32,
-    pub status: Option<i32>,
-    pub packaging: Option<i32>,
     pub quality: i16, //default is -1
     pub language: Option<i32>,
     pub script: Option<i32>,
@@ -43,8 +43,6 @@ pub struct ReleaseRow {
 pub struct Release {
     pub mbid: Uuid,
     pub name: String,
-    pub status: Option<i32>,
-    pub packaging: Option<i32>,
     pub quality: i16, //default is -1
     pub language: Option<i32>,
     pub script: Option<i32>,
@@ -63,8 +61,6 @@ impl From<ReleaseRow> for Release {
             mbid: r.gid,
             name: r.name,
             disambiguation: r.comment,
-            status: r.status,
-            packaging: r.packaging,
             quality: r.quality,
             barcode: r.barcode,
             language: r.language,
@@ -290,6 +286,16 @@ impl Release {
     async fn alias(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Alias>> {
         info!(release_id = self.id, "Release.aliases resolver called");
         let loader = ctx.data::<DataLoader<ReleaseAliasLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+
+    async fn status(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<ReleaseStatusLoader>>()?;
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
+
+    async fn packaging(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<ReleasePackagingLoader>>()?;
         Ok(loader.load_one(self.id).await?.unwrap_or_default())
     }
 }

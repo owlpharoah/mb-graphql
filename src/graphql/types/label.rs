@@ -1,4 +1,5 @@
 use crate::graphql::loaders::relationship::PageKey;
+use crate::graphql::loaders::type_by_label::LabelTypeLoader;
 use crate::graphql::{
     loaders::{
         alias_label::LabelAliasLoader,
@@ -38,8 +39,6 @@ pub struct LabelRow {
     pub end_date_year: Option<i16>,
     pub end_date_month: Option<i16>,
     pub end_date_day: Option<i16>,
-    #[sqlx(rename = "type")]
-    pub label_type: Option<i32>,
     pub comment: Option<String>,
     pub ended: bool,
     pub label_code: Option<i32>,
@@ -50,8 +49,6 @@ pub struct Label {
     pub mbid: Uuid,
     pub name: String,
     pub disambiguation: Option<String>,
-    #[graphql(name = "type")]
-    pub label_type: Option<i32>,
     pub ended: bool,
     #[graphql(name = "beginDate")]
     pub begin_date: Option<PartialDate>,
@@ -68,7 +65,6 @@ impl From<LabelRow> for Label {
             mbid: r.gid,
             name: r.name,
             disambiguation: r.comment,
-            label_type: r.label_type,
             ended: r.ended,
             begin_date: PartialDate::from_parts(
                 r.begin_date_year,
@@ -113,6 +109,11 @@ impl LabelQuery {
 
 #[ComplexObject]
 impl Label {
+    async fn r#type(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<String>> {
+        let loader = ctx.data::<DataLoader<LabelTypeLoader>>()?;
+
+        Ok(loader.load_one(self.id).await?.unwrap_or_default())
+    }
     #[graphql(complexity = "2 * first as usize * child_complexity")]
     async fn release(
         &self,
