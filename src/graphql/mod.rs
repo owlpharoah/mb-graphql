@@ -38,9 +38,6 @@ use crate::graphql::loaders::rating_label::LabelRatingLoader;
 use crate::graphql::loaders::rating_recording::RecordingRatingLoader;
 use crate::graphql::loaders::rating_release_group::ReleaseGroupRatingLoader;
 use crate::graphql::loaders::recording_isrc::RecordingISRCLoader;
-use crate::graphql::loaders::release_group_type_by_release_group::ReleaseGroupTypeLoader;
-use crate::graphql::loaders::release_packaging_by_release::ReleasePackagingLoader;
-use crate::graphql::loaders::release_status_by_release::ReleaseStatusLoader;
 use crate::graphql::loaders::relationship::area_id_by_area_mbid::AreaIDByMBIDLoader;
 use crate::graphql::loaders::relationship::area_id_by_artist::{
     AreaIdsByArtistLoader, BeginAreaIdsByArtistLoader, EndAreaIdsByArtistLoader,
@@ -73,6 +70,9 @@ use crate::graphql::loaders::relationship::tag_id_by_release::TagIdsByReleaseLoa
 use crate::graphql::loaders::relationship::tag_id_by_release_group::TagIdsByReleaseGroupLoader;
 use crate::graphql::loaders::relationship::track_id_by_medium::TrackIdByMediumLoader;
 use crate::graphql::loaders::release_event_by_release::ReleaseEventsByReleaseLoader;
+use crate::graphql::loaders::release_group_type_by_release_group::ReleaseGroupTypeLoader;
+use crate::graphql::loaders::release_packaging_by_release::ReleasePackagingLoader;
+use crate::graphql::loaders::release_status_by_release::ReleaseStatusLoader;
 use crate::graphql::loaders::type_by_area::AreaTypeLoader;
 use crate::graphql::loaders::type_by_artist::ArtistTypeLoader;
 use crate::graphql::loaders::type_by_label::LabelTypeLoader;
@@ -247,8 +247,10 @@ pub fn build_schema(pool: sqlx::PgPool) -> AppSchema {
     let gender_type = DataLoader::new(GenderTypeLoader { pool: pool.clone() }, tokio::spawn);
     let label_type = DataLoader::new(LabelTypeLoader { pool: pool.clone() }, tokio::spawn);
     let release_status = DataLoader::new(ReleaseStatusLoader { pool: pool.clone() }, tokio::spawn);
-    let release_packaging = DataLoader::new(ReleasePackagingLoader { pool: pool.clone() }, tokio::spawn);
-    let release_group_type = DataLoader::new(ReleaseGroupTypeLoader { pool: pool.clone() }, tokio::spawn);
+    let release_packaging =
+        DataLoader::new(ReleasePackagingLoader { pool: pool.clone() }, tokio::spawn);
+    let release_group_type =
+        DataLoader::new(ReleaseGroupTypeLoader { pool: pool.clone() }, tokio::spawn);
     let medium_format = DataLoader::new(MediumFormatLoader { pool: pool.clone() }, tokio::spawn);
 
     Schema::build(QueryRoot::default(), EmptyMutation, EmptySubscription)

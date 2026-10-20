@@ -18,8 +18,14 @@ impl Loader<i32> for ReleaseGroupTypeLoader {
     type Value = Option<String>;
     type Error = async_graphql::Error;
 
-    async fn load(&self, release_group_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
-        info!(count = release_group_ids.len(), "ReleaseGroupTypeLoader batch load");
+    async fn load(
+        &self,
+        release_group_ids: &[i32],
+    ) -> Result<HashMap<i32, Self::Value>, Self::Error> {
+        info!(
+            count = release_group_ids.len(),
+            "ReleaseGroupTypeLoader batch load"
+        );
 
         let rows = sqlx::query_as!(
             ReleaseGroupTypeRow,

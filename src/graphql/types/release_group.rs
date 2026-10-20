@@ -14,13 +14,13 @@ use crate::graphql::{
             release_group::ReleaseGroupLoader,
         },
         rating_release_group::ReleaseGroupRatingLoader,
-        release_group_type_by_release_group::ReleaseGroupTypeLoader,
         relationship::{
             artist_credit_id_release_group::ArtistCreditIdByReleaseGroupLoader,
             genre_id_by_release_group::GenreIdsByReleaseGroupLoader,
             release_id_by_release_group::ReleaseIdByReleaseGroupLoader,
             rg_id_by_rg_mbid::ReleaseGroupIDByMBIDLoader,
         },
+        release_group_type_by_release_group::ReleaseGroupTypeLoader,
     },
     types::{
         self,

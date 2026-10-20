@@ -19,7 +19,10 @@ impl Loader<i32> for ReleasePackagingLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, release_ids: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
-        info!(count = release_ids.len(), "ReleasePackagingLoader batch load");
+        info!(
+            count = release_ids.len(),
+            "ReleasePackagingLoader batch load"
+        );
 
         let rows = sqlx::query_as!(
             ReleasePackagingRow,
